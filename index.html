@@ -261,7 +261,7 @@
                     validPassword = true;
                 } else {
                     // For real data from sheets, try common passwords
-                    const commonPasswords = ['admin123', 'hm123', 'teacher123', 'ct123', 'password', '123456'];
+                    const commonPasswords = ['admin123', 'hm123', 'teach123', 'ct123', 'password', '123456'];
                     if (commonPasswords.includes(password)) {
                         validPassword = true;
                     }
@@ -269,7 +269,7 @@
             }
             
             if (!user || !validPassword) {
-                showLoginError('Invalid credentials. Try: admin123, hm123, teacher123, or ct123');
+               showLoginError('Invalid credentials. Try: admin123, hm123, teach123, or ct123');
                 return;
             }
             
