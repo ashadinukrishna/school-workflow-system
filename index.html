@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>School Workflow System</title>
+    <title>School Workflow System - Real Data</title>
+    <!-- Prevent favicon 404 error -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -13,28 +14,18 @@
             background-color: #f4f7f6;
             color: #333;
         }
-
         .navbar {
             background-color: #007bff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
         }
-
-        .navbar-brand,
-        .nav-link {
+        .navbar-brand, .nav-link {
             color: #fff !important;
         }
-
-        .navbar-brand:hover,
-        .nav-link:hover {
-            color: #e9ecef !important;
-        }
-
         .wrapper {
             display: flex;
             width: 100%;
             align-items: stretch;
         }
-
         #sidebar {
             min-width: 250px;
             max-width: 250px;
@@ -46,315 +37,1211 @@
             position: fixed;
             overflow-y: auto;
         }
-
-        #sidebar.active {
-            margin-left: -250px;
-        }
-
         #sidebar ul li a {
-            padding: 15px 20px;
-            font-size: 1.1em;
+            padding: 10px 20px;
             display: block;
             color: #fff;
             text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
         }
-
         #sidebar ul li a:hover {
-            color: #007bff;
-            background: #fff;
+            background: #495057;
+            color: #fff;
             text-decoration: none;
         }
-
-        #sidebar ul li.active > a {
-            color: #fff;
+        #sidebar ul li.active a {
             background: #007bff;
+            color: #fff;
         }
-
         #content {
             width: 100%;
             padding: 20px;
-            min-height: 100vh;
-            transition: all 0.3s;
             margin-left: 250px;
+            transition: all 0.3s;
         }
-
-        #sidebar.active + #content {
-            margin-left: 0;
-        }
-
         .card {
-            margin-bottom: 20px;
             border: none;
-            border-radius: .5rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .05);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-
         .card-header {
-            background-color: #007bff;
-            color: #fff;
-            border-bottom: none;
-            border-top-left-radius: .5rem;
-            border-top-right-radius: .5rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
         }
-
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-        .data-table {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #212529;
-            border-collapse: collapse;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 0.75rem;
-            vertical-align: top;
-            border: 1px solid #dee2e6;
-        }
-
-        .data-table thead th {
-            background-color: #e9ecef;
-        }
-
-        .modal-header {
-            background-color: #007bff;
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border-radius: 10px;
         }
-
-        .form-control:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
         }
-
-        @media (max-width: 768px) {
-            #sidebar {
-                margin-left: -250px;
-            }
-
-            #sidebar.active {
-                margin-left: 0;
-            }
-
-            #content {
-                width: 100%;
-                margin-left: 0;
-            }
-
-            #sidebar.active + #content {
-                margin-left: 250px;
-            }
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
         }
     </style>
 </head>
-
 <body>
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="connection-status" style="display: none;">
+        <div class="alert alert-info">
+            <i class="fas fa-wifi"></i> <span id="connectionMessage">Connecting...</span>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-school"></i> School Workflow System v2.0
+            </a>
+            <div class="navbar-nav ml-auto">
+                <span class="nav-link">
+                    <i class="fas fa-user"></i> <span id="currentUserName">Demo User</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
     <div class="wrapper">
         <!-- Sidebar -->
         <nav id="sidebar">
-            <div class="sidebar-header text-center mb-4">
-                <h3>School System</h3>
-            </div>
             <ul class="list-unstyled components">
-                <li><a href="#" id="dashboardLink"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="#" id="schemesLink"><i class="fas fa-book"></i> Schemes of Work</a></li>
-                <li><a href="#" id="lessonPlansLink"><i class="fas fa-clipboard-list"></i> Lesson Plans</a></li>
-                <li><a href="#" id="dailyReportsLink"><i class="fas fa-chart-line"></i> Daily Reports</a></li>
-                <li><a href="#" id="substitutionLink"><i class="fas fa-exchange-alt"></i> Substitution</a></li>
-                <li><a href="#" id="timetableLink"><i class="fas fa-calendar-week"></i> Timetable</a></li>
+                <li class="active">
+                    <a href="#" onclick="loadDashboard()"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadSchemes()"><i class="fas fa-book"></i> Schemes of Work</a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadLessonPlans()"><i class="fas fa-clipboard-list"></i> Lesson Plans</a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadDailyReports()"><i class="fas fa-chart-line"></i> Daily Reports</a>
+                </li>
             </ul>
         </nav>
 
-        <!-- Page Content -->
+        <!-- Main Content -->
         <div id="content">
-            <nav class="navbar navbar-expand-lg navbar-dark">
-                <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-info mr-3">
-                        <i class="fas fa-align-left"></i>
-                        <span>Toggle Sidebar</span>
-                    </button>
-                    <div class="ml-auto">
-                        <button class="btn btn-outline-light" id="profileBtn">
-                            <i class="fas fa-user"></i> Profile
-                        </button>
-                        <button class="btn btn-outline-light ml-2" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </button>
-                    </div>
-                </div>
-            </nav>
-
-            <div id="mainContent" class="container-fluid">
-                <!-- Dashboard Content -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-tachometer-alt"></i> Dashboard</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <h4 class="mb-0" id="totalSchemes">0</h4>
-                                                <small>Total Schemes</small>
-                                            </div>
-                                            <div class="ml-auto">
-                                                <i class="fas fa-book fa-2x"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <h4 class="mb-0" id="totalLessons">0</h4>
-                                                <small>Lesson Plans</small>
-                                            </div>
-                                            <div class="ml-auto">
-                                                <i class="fas fa-clipboard-list fa-2x"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-white">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <h4 class="mb-0" id="totalReports">0</h4>
-                                                <small>Daily Reports</small>
-                                            </div>
-                                            <div class="ml-auto">
-                                                <i class="fas fa-chart-line fa-2x"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <div>
-                                                <h4 class="mb-0" id="pendingRequests">0</h4>
-                                                <small>Pending Requests</small>
-                                            </div>
-                                            <div class="ml-auto">
-                                                <i class="fas fa-clock fa-2x"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6>Recent Activities</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <ul class="list-group list-group-flush" id="recentActivities">
-                                            <li class="list-group-item">Welcome to the School Workflow System</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6>Quick Actions</h6>
-                                    </div>
-                                    <div class="card-body">                        <button class="btn btn-primary btn-block mb-2" onclick="loadSchemesOfWork()">
-                            <i class="fas fa-plus"></i> Add New Scheme
-                        </button>
-                        <button class="btn btn-success btn-block mb-2" onclick="loadLessonPlans()">
-                            <i class="fas fa-plus"></i> Create Lesson Plan
-                        </button>
-                        <button class="btn btn-info btn-block mb-2" onclick="loadDailyReports()">
-                            <i class="fas fa-plus"></i> Submit Daily Report
-                        </button>
-                        <button class="btn btn-warning btn-block" onclick="loadTimetable()">
-                            <i class="fas fa-calendar-week"></i> View Timetable
-                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="footer text-center mt-4">
-                <p>&copy; 2024 School Workflow System. All rights reserved.</p>
+            <div id="mainContent">
+                <h2>Welcome to School Workflow System</h2>
+                <p>Loading data from Google Sheets...</p>
+                <div id="dataDisplay"></div>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Profile Modal -->
-    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog">
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">User Profile</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                    <h5 class="modal-title"><i class="fas fa-sign-in-alt"></i> Login to School System</h5>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Name:</strong> <span id="profileName">Demo Teacher</span></p>
-                    <p><strong>Email:</strong> <span id="profileEmail">teacher@school.com</span></p>
-                    <p><strong>Role:</strong> <span id="profileRole">Teacher</span></p>
-                    <p><strong>Phone:</strong> <span id="profilePhone">+1234567890</span></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Form Modal -->
-    <div class="modal fade" id="formModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="formModalTitle">Add New Item</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="formModalBody">
-                    <!-- Dynamic form content will be loaded here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="formSubmitBtn">Submit</button>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="userSelect">Select User:</label>
+                            <select class="form-control" id="userSelect" required>
+                                <option value="">Choose your profile...</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="passwordInput">Password:</label>
+                            <input type="password" class="form-control" id="passwordInput" placeholder="Enter password" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                    <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Include JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ========================================
+        // CHANGE THIS LINE WITH YOUR WEB APP URL
+        // ========================================
+        // REPLACE THIS WITH YOUR NEW DEPLOYMENT URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxZaxl_E96RcRAE165Zkhk6EmAbWG9ebVRhqNRXGp73l1jQ6a-Eu2NamiAmJ81-eVy8Gw/exec';
+        
+        // Global variables
+        let appData = {
+            schemes: [],
+            lessonPlans: [],
+            dailyReports: [],
+            users: []
+        };
+
+        let currentUser = {
+            name: '',
+            role: '',
+            class: '',
+            subject: ''
+        };
+
+        // Initialize the app
+        $(document).ready(function() {
+            console.log('✅ App starting...');
+            console.log('✅ jQuery loaded');
+            console.log('✅ Bootstrap loaded');
+            showConnectionStatus('info', 'Connecting to Google Sheets...');
+            testConnection();
+        });
+
+        // Authentication and Role Management
+        function showLogin() {
+            $('#loginModal').modal('show');
+        }
+
+        function populateUserSelect() {
+            const userSelect = $('#userSelect');
+            userSelect.empty();
+            userSelect.append('<option value="">Choose your profile...</option>');
+            
+            // Add sample users if no users loaded from sheets
+            const users = appData.users.length > 0 ? appData.users : getSampleUsers();
+            
+            users.forEach(user => {
+                userSelect.append(`<option value="${user.id}" data-name="${user.name}" data-role="${user.role}" data-class="${user.class || ''}" data-subject="${user.subject || ''}">${user.name} (${user.role})</option>`);
+            });
+        }
+
+        function getSampleUsers() {
+            return [
+                { id: 1, name: 'Principal Johnson', role: 'Headmaster', class: '', subject: '', password: 'hm123' },
+                { id: 2, name: 'Simna', role: 'Teacher', class: 'STD 1A', subject: 'EVS', password: 'teacher123' },
+                { id: 3, name: 'Saritha', role: 'Teacher', class: 'STD 2A', subject: 'Malayalam', password: 'teacher123' },
+                { id: 4, name: 'Athulya', role: 'Class Teacher', class: 'STD 3A', subject: 'English', password: 'ct123' },
+                { id: 5, name: 'Ravi Kumar', role: 'Class Teacher', class: 'STD 4B', subject: 'Mathematics', password: 'ct123' }
+            ];
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const selectedOption = $('#userSelect option:selected');
+            const password = $('#passwordInput').val();
+            const userId = selectedOption.val();
+            
+            if (!userId) {
+                showLoginError('Please select a user');
+                return;
+            }
+            
+            // Get user data
+            const users = appData.users.length > 0 ? appData.users : getSampleUsers();
+            console.log('Available users:', users);
+            console.log('Looking for user ID:', userId);
+            
+            const user = users.find(u => u.id == userId || u.name === selectedOption.data('name'));
+            console.log('Found user:', user);
+            
+            // Simple password check - for real data, try common passwords
+            let validPassword = false;
+            if (user) {
+                // Try the entered password first
+                if (user.password && user.password === password) {
+                    validPassword = true;
+                } else {
+                    // For real data from sheets, try common passwords
+                    const commonPasswords = ['admin123', 'hm123', 'teacher123', 'ct123', 'password', '123456'];
+                    if (commonPasswords.includes(password)) {
+                        validPassword = true;
+                    }
+                }
+            }
+            
+            if (!user || !validPassword) {
+                showLoginError('Invalid credentials. Try: admin123, hm123, teacher123, or ct123');
+                return;
+            }
+            
+            // Set current user
+            currentUser = {
+                id: user.id,
+                name: user.name,
+                role: user.role,
+                class: user.class || '',
+                subject: user.subject || ''
+            };
+            
+            // Update UI
+            $('#currentUserName').text(currentUser.name + ' (' + currentUser.role + ')');
+            $('#loginModal').modal('hide');
+            
+            // Reload dashboard with role-based data
+            loadDashboard();
+            
+            console.log('User logged in:', currentUser);
+        }
+
+        function showLoginError(message) {
+            $('#loginError').text(message).show();
+            setTimeout(() => $('#loginError').hide(), 3000);
+        }
+
+        // Role checking functions
+        function isHeadmaster() {
+            return currentUser.role === 'Headmaster';
+        }
+
+        function isTeacher() {
+            return currentUser.role === 'Teacher';
+        }
+
+        function isClassTeacher() {
+            return currentUser.role === 'Class Teacher';
+        }
+
+        function canViewAllData() {
+            return isHeadmaster();
+        }
+
+        function canViewClassData(className) {
+            if (isHeadmaster()) return true;
+            if (isClassTeacher() && currentUser.class === className) return true;
+            if (isTeacher() && currentUser.class === className) return true;
+            return false;
+        }
+
+        function canEditData(item) {
+            if (isHeadmaster()) return true;
+            if (item.teacher === currentUser.name) return true;
+            if (isClassTeacher() && item.class === currentUser.class) return true;
+            return false;
+        }
+
+        function filterDataByRole(data) {
+            if (isHeadmaster()) {
+                return data; // Headmaster sees everything
+            }
+            
+            // Teachers and Class Teachers see only their own data
+            return data.filter(item => {
+                if (item.teacher === currentUser.name) return true;
+                if (isClassTeacher() && item.class === currentUser.class) return true;
+                return false;
+            });
+        }
+
+        // Test connection to Google Apps Script
+        async function testConnection() {
+            // Check if WEB_APP_URL is configured
+            if (!WEB_APP_URL || WEB_APP_URL.includes('PUT_YOUR') || WEB_APP_URL.includes('PASTE_YOUR')) {
+                console.log('WEB_APP_URL not configured, using demo data');
+                showConnectionStatus('info', 'Using demo data - Update WEB_APP_URL to connect to Google Sheets');
+                loadDemoData();
+                return;
+            }
+
+            try {
+                console.log('Testing connection to:', WEB_APP_URL);
+                
+                const testUrl = WEB_APP_URL + '?action=test';
+                console.log('Test URL:', testUrl);
+                
+                const response = await fetch(testUrl);
+                console.log('Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result && result.success) {
+                    showConnectionStatus('success', 'Connected to Google Sheets successfully!');
+                    loadInitialData();
+                } else {
+                    throw new Error(result ? (result.error || 'Backend returned error') : 'Invalid response format');
+                }
+            } catch (error) {
+                console.error('Connection failed:', error);
+                showConnectionStatus('error', 'Connection failed: ' + error.message + ' - Using demo data instead');
+                loadDemoData();
+            }
+        }
+
+        // Load initial data from Google Sheets
+        async function loadInitialData() {
+            try {
+                console.log('Loading data from Google Sheets...');
+                
+                // Use simple URL concatenation (more reliable with Google Apps Script)
+                const schemesUrl = WEB_APP_URL + '?action=getSchemes';
+                const lessonPlansUrl = WEB_APP_URL + '?action=getLessonPlans';
+                const reportsUrl = WEB_APP_URL + '?action=getDailyReports';
+                const usersUrl = WEB_APP_URL + '?action=getUsers';
+                
+                console.log('Schemes URL:', schemesUrl);
+                console.log('Lesson Plans URL:', lessonPlansUrl);
+                console.log('Reports URL:', reportsUrl);
+                console.log('Users URL:', usersUrl);
+                
+                // Load users first
+                const usersResponse = await fetch(usersUrl);
+                console.log('Users response status:', usersResponse.status);
+                const usersResult = await usersResponse.json();
+                console.log('Users result:', usersResult);
+                appData.users = usersResult.success ? usersResult.data : [];
+
+                // Load schemes
+                const schemesResponse = await fetch(schemesUrl);
+                console.log('Schemes response status:', schemesResponse.status);
+                const schemesResult = await schemesResponse.json();
+                console.log('Schemes result:', schemesResult);
+                appData.schemes = schemesResult.success ? schemesResult.data : [];
+
+                // Load lesson plans
+                const lessonPlansResponse = await fetch(lessonPlansUrl);
+                console.log('Lesson plans response status:', lessonPlansResponse.status);
+                const lessonPlansResult = await lessonPlansResponse.json();
+                console.log('Lesson plans result:', lessonPlansResult);
+                appData.lessonPlans = lessonPlansResult.success ? lessonPlansResult.data : [];
+
+                // Load daily reports
+                const reportsResponse = await fetch(reportsUrl);
+                console.log('Reports response status:', reportsResponse.status);
+                const reportsResult = await reportsResponse.json();
+                console.log('Reports result:', reportsResult);
+                appData.dailyReports = reportsResult.success ? reportsResult.data : [];
+
+                console.log('Final app data:', appData);
+                console.log('Users data details:', appData.users);
+                console.log('Schemes data details:', appData.schemes);
+                console.log('Lesson Plans data details:', appData.lessonPlans);
+                console.log('Daily Reports data details:', appData.dailyReports);
+                showConnectionStatus('success', 'Data loaded successfully from Google Sheets!');
+                
+                // Show login after data is loaded
+                populateUserSelect();
+                showLogin();
+                
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showConnectionStatus('error', 'Failed to load data: ' + error.message + ' - Using demo data instead');
+                loadDemoData();
+            }
+        }
+
+        // Load demo data if connection fails
+        function loadDemoData() {
+            appData = {
+                schemes: [
+                    { 
+                        id: 1, 
+                        schemeId: 'SCH001', 
+                        chapter: 'Basic Addition', 
+                        title: 'Basic Addition',
+                        teacher: 'Simna', 
+                        class: 'STD 1A', 
+                        subject: 'EVS', 
+                        term: 1,
+                        unit: 1,
+                        periods: 5,
+                        status: 'Pending',
+                        date: '2024-07-15',
+                        submittedDate: '2024-07-15',
+                        description: 'Introduction to basic addition concepts'
+                    },
+                    { 
+                        id: 2, 
+                        schemeId: 'SCH002', 
+                        chapter: 'Letter Recognition', 
+                        title: 'Letter Recognition',
+                        teacher: 'Saritha', 
+                        class: 'STD 2A', 
+                        subject: 'Malayalam', 
+                        term: 1,
+                        unit: 2,
+                        periods: 8,
+                        status: 'Approved',
+                        date: '2024-07-10',
+                        submittedDate: '2024-07-10',
+                        approvedBy: 'Admin User',
+                        approvedDate: '2024-07-12',
+                        description: 'Recognition and writing of Malayalam letters'
+                    }
+                ],
+                lessonPlans: [
+                    { id: 1, lessonPlanId: 'LP001', teacher: 'Simna', class: 'STD 1A', subject: 'EVS', status: 'Ready' }
+                ],
+                dailyReports: [
+                    { id: 1, teacher: 'Simna', class: 'STD 1A', subject: 'EVS', date: '2024-07-14' }
+                ],
+                users: [
+                    { id: 1, name: 'Admin User', role: 'Headmaster', class: '', subject: '', password: 'admin123' },
+                    { id: 2, name: 'Simna', role: 'Teacher', class: 'STD 1A', subject: 'EVS', password: 'ct123' },
+                    { id: 3, name: 'Saritha', role: 'Teacher', class: 'STD 2A', subject: 'Malayalam', password: 'teacher123' },
+                    { id: 4, name: 'Athulya', role: 'Class Teacher', class: 'STD 3A', subject: 'English', password: 'ct123' },
+                    { id: 5, name: 'Ravi Kumar', role: 'Class Teacher', class: 'STD 4B', subject: 'Mathematics', password: 'ct123' }
+                ]
+            };
+            console.log('Using demo data:', appData);
+            
+            // Show login after demo data is loaded
+            populateUserSelect();
+            showLogin();
+        }
+
+        // Dashboard
+        function loadDashboard() {
+            setActiveNav(0);
+            
+            // Filter data based on user role
+            const filteredSchemes = filterDataByRole(appData.schemes);
+            const filteredLessonPlans = filterDataByRole(appData.lessonPlans);
+            const filteredReports = filterDataByRole(appData.dailyReports);
+            
+            const html = `
+                <div class="row">
+                    <div class="col-12">
+                        <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                        <p class="text-muted">School Workflow Management System - ${currentUser.role || 'Guest'} View</p>
+                        ${currentUser.role ? `<div class="alert alert-info">
+                            <strong>Welcome, ${currentUser.name}!</strong><br>
+                            Role: ${currentUser.role}<br>
+                            ${currentUser.class ? `Class: ${currentUser.class}<br>` : ''}
+                            ${currentUser.subject ? `Subject: ${currentUser.subject}` : ''}
+                        </div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-book fa-2x mb-2"></i>
+                                <div class="stats-number">${filteredSchemes.length}</div>
+                                <div>${isHeadmaster() ? 'Total' : 'My'} Schemes</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                <div class="stats-number">${filteredLessonPlans.length}</div>
+                                <div>${isHeadmaster() ? 'Total' : 'My'} Lesson Plans</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <div class="stats-number">${filteredReports.length}</div>
+                                <div>${isHeadmaster() ? 'Total' : 'My'} Reports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> System Status & Role Permissions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Connection Status:</strong> ${WEB_APP_URL.includes('PUT_YOUR') ? 'Not configured - Update WEB_APP_URL' : 'Configured ✓'}</p>
+                                        <p><strong>Data Source:</strong> ${WEB_APP_URL.includes('PUT_YOUR') ? 'Demo Data (Offline)' : 'Google Sheets (Online)'}</p>
+                                        <p><strong>Last Updated:</strong> ${new Date().toLocaleString()}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Your Permissions:</h6>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas ${canViewAllData() ? 'fa-check text-success' : 'fa-times text-danger'}"></i> View All School Data</li>
+                                            <li><i class="fas ${isHeadmaster() || isClassTeacher() ? 'fa-check text-success' : 'fa-times text-danger'}"></i> Manage Class Data</li>
+                                            <li><i class="fas ${isHeadmaster() ? 'fa-check text-success' : 'fa-times text-danger'}"></i> Admin Functions</li>
+                                            <li><i class="fas fa-check text-success"></i> View Personal Data</li>
+                                        </ul>
+                                        ${!currentUser.role ? '<button class="btn btn-primary btn-sm" onclick="showLogin()"><i class="fas fa-sign-in-alt"></i> Login to Access More</button>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#mainContent').html(html);
+        }
+
+        // Load Schemes
+        function loadSchemes() {
+            setActiveNav(1);
+            
+            // Filter schemes based on user role
+            const filteredSchemes = filterDataByRole(appData.schemes);
+            
+            const html = `
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5><i class="fas fa-book"></i> Schemes of Work - ${currentUser.role || 'Guest'} View</h5>
+                            ${isHeadmaster() ? '<span class="badge badge-info">All School Data</span>' : 
+                              isClassTeacher() ? '<span class="badge badge-warning">My Class Data</span>' : 
+                              '<span class="badge badge-primary">My Data</span>'}
+                        </div>
+                        ${isTeacher() || isClassTeacher() ? '<button class="btn btn-primary btn-sm" onclick="showAddSchemeModal()"><i class="fas fa-plus"></i> Add New Scheme</button>' : ''}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Scheme ID</th>
+                                        <th>Chapter</th>
+                                        <th>Teacher</th>
+                                        <th>Class</th>
+                                        <th>Subject</th>
+                                        <th>Term</th>
+                                        <th>Unit</th>
+                                        <th>Periods</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        ${isHeadmaster() ? '<th>Actions</th>' : ''}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredSchemes.map(scheme => `
+                                        <tr>
+                                            <td>${scheme.schemeId || scheme.id}</td>
+                                            <td>${scheme.chapter || scheme.title || 'N/A'}</td>
+                                            <td>${scheme.teacher}</td>
+                                            <td>${scheme.class}</td>
+                                            <td>${scheme.subject}</td>
+                                            <td>${scheme.term || 'N/A'}</td>
+                                            <td>${scheme.unit || 'N/A'}</td>
+                                            <td>${scheme.periods || 'N/A'}</td>
+                                            <td><span class="badge badge-${scheme.status === 'Approved' ? 'success' : scheme.status === 'Rejected' ? 'danger' : 'warning'}">${scheme.status}</span></td>
+                                            <td>${scheme.date || scheme.submittedDate || 'N/A'}</td>
+                                            ${isHeadmaster() ? `<td>
+                                                ${scheme.status === 'Pending' ? 
+                                                    `<button class="btn btn-sm btn-success me-1" onclick="approveScheme('${scheme.schemeId || scheme.id}')">Approve</button>
+                                                     <button class="btn btn-sm btn-danger" onclick="rejectScheme('${scheme.schemeId || scheme.id}')">Reject</button>` : 
+                                                    '<span class="text-muted">' + scheme.status + '</span>'
+                                                }
+                                            </td>` : ''}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${filteredSchemes.length === 0 ? 
+                            `<p class="text-muted text-center">
+                                ${isHeadmaster() ? 'No schemes found in the system.' : 
+                                  'No schemes found for your profile. Contact admin if you think this is incorrect.'}
+                            </p>` : ''
+                        }
+                    </div>
+                </div>
+                
+                <!-- Add Scheme Modal -->
+                <div class="modal fade" id="addSchemeModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New Scheme of Work</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addSchemeForm">
+                                    <div class="form-group">
+                                        <label for="schemeTitle">Chapter/Title:</label>
+                                        <input type="text" class="form-control" id="schemeTitle" placeholder="Enter chapter name or topic" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="schemeSubject">Subject:</label>
+                                        <select class="form-control" id="schemeSubject" required>
+                                            <option value="">Choose Subject...</option>
+                                            <!-- Will be populated based on user's assigned subjects -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="schemeClass">Class:</label>
+                                        <select class="form-control" id="schemeClass" required>
+                                            <option value="">Choose Class...</option>
+                                            <!-- Will be populated based on user's assigned classes -->
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="schemeTerm">Term:</label>
+                                                <input type="number" class="form-control" id="schemeTerm" min="1" max="3" placeholder="1, 2, or 3" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="schemeUnit">Unit:</label>
+                                                <input type="number" class="form-control" id="schemeUnit" min="1" placeholder="Unit number" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="schemePeriods">Number of Periods:</label>
+                                        <input type="number" class="form-control" id="schemePeriods" min="1" placeholder="Number of periods needed" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="schemeDescription">Description/Learning Outcomes:</label>
+                                        <textarea class="form-control" id="schemeDescription" rows="3" placeholder="Brief description of learning outcomes..."></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" onclick="submitScheme()">Submit Scheme</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#mainContent').html(html);
+        }
+
+        // Load Lesson Plans
+        function loadLessonPlans() {
+            setActiveNav(2);
+            
+            // Filter lesson plans based on user role
+            const filteredLessonPlans = filterDataByRole(appData.lessonPlans);
+            
+            const html = `
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5><i class="fas fa-clipboard-list"></i> Lesson Plans - ${currentUser.role || 'Guest'} View</h5>
+                            ${isHeadmaster() ? '<span class="badge badge-info">All School Data</span>' : 
+                              isClassTeacher() ? '<span class="badge badge-warning">My Class Data</span>' : 
+                              '<span class="badge badge-primary">My Data</span>'}
+                        </div>
+                        ${isTeacher() || isClassTeacher() ? '<button class="btn btn-primary btn-sm" onclick="showAddLessonPlanModal()"><i class="fas fa-plus"></i> Add Lesson Plan</button>' : ''}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Plan ID</th>
+                                        <th>Teacher</th>
+                                        <th>Class</th>
+                                        <th>Subject</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        ${isHeadmaster() ? '<th>Actions</th>' : ''}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredLessonPlans.map(plan => `
+                                        <tr>
+                                            <td>${plan.lessonPlanId || plan.id}</td>
+                                            <td>${plan.teacher}</td>
+                                            <td>${plan.class}</td>
+                                            <td>${plan.subject}</td>
+                                            <td>${plan.date || 'N/A'}</td>
+                                            <td><span class="badge badge-${plan.status === 'Approved' ? 'success' : plan.status === 'Rejected' ? 'danger' : 'warning'}">${plan.status}</span></td>
+                                            ${isHeadmaster() ? `<td>
+                                                ${plan.status === 'Pending' ? 
+                                                    `<button class="btn btn-sm btn-success me-1" onclick="approveLessonPlan('${plan.lessonPlanId || plan.id}')">Approve</button>
+                                                     <button class="btn btn-sm btn-danger" onclick="rejectLessonPlan('${plan.lessonPlanId || plan.id}')">Reject</button>` : 
+                                                    '<span class="text-muted">' + plan.status + '</span>'
+                                                }
+                                            </td>` : ''}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${filteredLessonPlans.length === 0 ? '<p class="text-muted text-center">No lesson plans found. Add some data to start the workflow.</p>' : ''}
+                    </div>
+                </div>
+                
+                <!-- Add Lesson Plan Modal -->
+                <div class="modal fade" id="addLessonPlanModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New Lesson Plan</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addLessonPlanForm">
+                                    <div class="form-group">
+                                        <label for="lessonTitle">Lesson Title:</label>
+                                        <input type="text" class="form-control" id="lessonTitle" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lessonSubject">Subject:</label>
+                                        <input type="text" class="form-control" id="lessonSubject" value="${currentUser.subject}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lessonClass">Class:</label>
+                                        <input type="text" class="form-control" id="lessonClass" value="${currentUser.class}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lessonDate">Date:</label>
+                                        <input type="date" class="form-control" id="lessonDate" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lessonObjectives">Learning Objectives:</label>
+                                        <textarea class="form-control" id="lessonObjectives" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lessonActivities">Activities:</label>
+                                        <textarea class="form-control" id="lessonActivities" rows="3"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" onclick="submitLessonPlan()">Submit Lesson Plan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#mainContent').html(html);
+        }
+
+        // Load Daily Reports
+        function loadDailyReports() {
+            setActiveNav(3);
+            const html = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Daily Reports</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Teacher</th>
+                                        <th>Class</th>
+                                        <th>Subject</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${appData.dailyReports.map(report => `
+                                        <tr>
+                                            <td>${report.date}</td>
+                                            <td>${report.teacher}</td>
+                                            <td>${report.class}</td>
+                                            <td>${report.subject}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${appData.dailyReports.length === 0 ? '<p class="text-muted text-center">No daily reports found. Add some data to your Google Sheets.</p>' : ''}
+                    </div>
+                </div>
+            `;
+            $('#mainContent').html(html);
+        }
+
+        // ========================================
+        // WORKFLOW FUNCTIONS
+        // ========================================
+        
+        // Scheme Management Functions
+        async function submitScheme() {
+            const title = $('#schemeTitle').val();
+            const subject = $('#schemeSubject').val();
+            const className = $('#schemeClass').val();
+            const term = $('#schemeTerm').val();
+            const unit = $('#schemeUnit').val();
+            const periods = $('#schemePeriods').val();
+            const description = $('#schemeDescription').val();
+            
+            if (!title || !subject || !className || !term || !unit || !periods) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const newScheme = {
+                id: Date.now(),
+                schemeId: 'SCH' + Date.now(),
+                chapter: title,
+                title: title, // Keep both for compatibility
+                teacher: currentUser.name,
+                class: className,
+                subject: subject,
+                term: parseInt(term),
+                unit: parseInt(unit),
+                periods: parseInt(periods),
+                description: description,
+                status: 'Pending',
+                date: new Date().toISOString().split('T')[0],
+                submittedDate: new Date().toISOString().split('T')[0],
+                approvedBy: '',
+                approvedDate: ''
+            };
+            
+            try {
+                // In real app, this would call the backend API
+                const response = await fetch(WEB_APP_URL + '?action=addScheme', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newScheme)
+                });
+                
+                if (response.ok) {
+                    // Add to local data for immediate display
+                    appData.schemes.push(newScheme);
+                    $('#addSchemeModal').modal('hide');
+                    $('#addSchemeForm')[0].reset();
+                    loadSchemes();
+                    alert('Scheme submitted successfully! Awaiting Headmaster approval.');
+                } else {
+                    throw new Error('Failed to submit scheme');
+                }
+            } catch (error) {
+                console.error('Error submitting scheme:', error);
+                // For demo/fallback - add to local data anyway
+                appData.schemes.push(newScheme);
+                $('#addSchemeModal').modal('hide');
+                $('#addSchemeForm')[0].reset();
+                loadSchemes();
+                alert('Scheme submitted successfully! (Demo mode - stored locally)');
+            }
+        }
+
+        async function approveScheme(schemeId) {
+            if (!isHeadmaster()) {
+                alert('Only Headmaster can approve schemes');
+                return;
+            }
+            
+            try {
+                const response = await fetch(WEB_APP_URL + `?action=updateSchemeStatus&id=${schemeId}&status=Approved`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Update local data
+                    const scheme = appData.schemes.find(s => s.schemeId === schemeId || s.id == schemeId);
+                    if (scheme) {
+                        scheme.status = 'Approved';
+                        scheme.approvedBy = currentUser.name;
+                        scheme.approvedDate = new Date().toISOString().split('T')[0];
+                    }
+                    loadSchemes();
+                    alert('Scheme approved successfully! Teacher can now create lesson plans.');
+                } else {
+                    throw new Error('Failed to approve scheme');
+                }
+            } catch (error) {
+                console.error('Error approving scheme:', error);
+                // For demo/fallback
+                const scheme = appData.schemes.find(s => s.schemeId === schemeId || s.id == schemeId);
+                if (scheme) {
+                    scheme.status = 'Approved';
+                    scheme.approvedBy = currentUser.name;
+                    scheme.approvedDate = new Date().toISOString().split('T')[0];
+                }
+                loadSchemes();
+                alert('Scheme approved successfully! (Demo mode)');
+            }
+        }
+
+        async function rejectScheme(schemeId) {
+            if (!isHeadmaster()) {
+                alert('Only Headmaster can reject schemes');
+                return;
+            }
+            
+            const reason = prompt('Please provide a reason for rejection:');
+            if (!reason) return;
+            
+            try {
+                const response = await fetch(WEB_APP_URL + `?action=updateSchemeStatus&id=${schemeId}&status=Rejected&reason=${encodeURIComponent(reason)}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const scheme = appData.schemes.find(s => s.schemeId === schemeId || s.id == schemeId);
+                    if (scheme) {
+                        scheme.status = 'Rejected';
+                        scheme.rejectionReason = reason;
+                        scheme.reviewedBy = currentUser.name;
+                        scheme.reviewedDate = new Date().toISOString().split('T')[0];
+                    }
+                    loadSchemes();
+                    alert('Scheme rejected. Teacher has been notified.');
+                } else {
+                    throw new Error('Failed to reject scheme');
+                }
+            } catch (error) {
+                console.error('Error rejecting scheme:', error);
+                // For demo/fallback
+                const scheme = appData.schemes.find(s => s.schemeId === schemeId || s.id == schemeId);
+                if (scheme) {
+                    scheme.status = 'Rejected';
+                    scheme.rejectionReason = reason;
+                }
+                loadSchemes();
+                alert('Scheme rejected! (Demo mode)');
+            }
+        }
+
+        // Lesson Plan Management Functions
+        async function submitLessonPlan() {
+            const title = $('#lessonTitle').val();
+            const subject = $('#lessonSubject').val();
+            const className = $('#lessonClass').val();
+            const date = $('#lessonDate').val();
+            const objectives = $('#lessonObjectives').val();
+            const activities = $('#lessonActivities').val();
+            
+            if (!title || !subject || !className || !date) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const newLessonPlan = {
+                id: Date.now(),
+                lessonPlanId: 'LP' + Date.now(),
+                title: title,
+                teacher: currentUser.name,
+                class: className,
+                subject: subject,
+                date: date,
+                objectives: objectives,
+                activities: activities,
+                status: 'Pending',
+                submittedDate: new Date().toISOString().split('T')[0]
+            };
+            
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=addLessonPlan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newLessonPlan)
+                });
+                
+                if (response.ok) {
+                    appData.lessonPlans.push(newLessonPlan);
+                    $('#addLessonPlanModal').modal('hide');
+                    $('#addLessonPlanForm')[0].reset();
+                    loadLessonPlans();
+                    alert('Lesson plan submitted successfully! Awaiting Headmaster approval.');
+                } else {
+                    throw new Error('Failed to submit lesson plan');
+                }
+            } catch (error) {
+                console.error('Error submitting lesson plan:', error);
+                // For demo/fallback
+                appData.lessonPlans.push(newLessonPlan);
+                $('#addLessonPlanModal').modal('hide');
+                $('#addLessonPlanForm')[0].reset();
+                loadLessonPlans();
+                alert('Lesson plan submitted successfully! (Demo mode)');
+            }
+        }
+
+        async function approveLessonPlan(planId) {
+            if (!isHeadmaster()) {
+                alert('Only Headmaster can approve lesson plans');
+                return;
+            }
+            
+            try {
+                const response = await fetch(WEB_APP_URL + `?action=updateLessonPlanStatus&id=${planId}&status=Approved`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const plan = appData.lessonPlans.find(p => p.lessonPlanId === planId || p.id == planId);
+                    if (plan) {
+                        plan.status = 'Approved';
+                        plan.approvedBy = currentUser.name;
+                        plan.approvedDate = new Date().toISOString().split('T')[0];
+                    }
+                    loadLessonPlans();
+                    alert('Lesson plan approved successfully!');
+                } else {
+                    throw new Error('Failed to approve lesson plan');
+                }
+            } catch (error) {
+                console.error('Error approving lesson plan:', error);
+                // For demo/fallback
+                const plan = appData.lessonPlans.find(p => p.lessonPlanId === planId || p.id == planId);
+                if (plan) {
+                    plan.status = 'Approved';
+                    plan.approvedBy = currentUser.name;
+                    plan.approvedDate = new Date().toISOString().split('T')[0];
+                }
+                loadLessonPlans();
+                alert('Lesson plan approved successfully! (Demo mode)');
+            }
+        }
+
+        async function rejectLessonPlan(planId) {
+            if (!isHeadmaster()) {
+                alert('Only Headmaster can reject lesson plans');
+                return;
+            }
+            
+            const reason = prompt('Please provide a reason for rejection:');
+            if (!reason) return;
+            
+            try {
+                const response = await fetch(WEB_APP_URL + `?action=updateLessonPlanStatus&id=${planId}&status=Rejected&reason=${encodeURIComponent(reason)}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const plan = appData.lessonPlans.find(p => p.lessonPlanId === planId || p.id == planId);
+                    if (plan) {
+                        plan.status = 'Rejected';
+                        plan.rejectionReason = reason;
+                        plan.reviewedBy = currentUser.name;
+                        plan.reviewedDate = new Date().toISOString().split('T')[0];
+                    }
+                    loadLessonPlans();
+                    alert('Lesson plan rejected. Teacher has been notified.');
+                } else {
+                    throw new Error('Failed to reject lesson plan');
+                }
+            } catch (error) {
+                console.error('Error rejecting lesson plan:', error);
+                // For demo/fallback
+                const plan = appData.lessonPlans.find(p => p.lessonPlanId === planId || p.id == planId);
+                if (plan) {
+                    plan.status = 'Rejected';
+                    plan.rejectionReason = reason;
+                }
+                loadLessonPlans();
+                alert('Lesson plan rejected! (Demo mode)');
+            }
+        }
+
+        // Helper functions
+        function setActiveNav(index) {
+            $('#sidebar ul li').removeClass('active');
+            $('#sidebar ul li').eq(index).addClass('active');
+        }
+
+        function showConnectionStatus(type, message) {
+            const statusEl = $('#connectionStatus');
+            const messageEl = $('#connectionMessage');
+            const alertEl = statusEl.find('.alert');
+            
+            messageEl.text(message);
+            alertEl.removeClass('alert-info alert-success alert-danger');
+            alertEl.addClass(`alert-${type === 'error' ? 'danger' : type}`);
+            
+            statusEl.show();
+            
+            if (type === 'success') {
+                setTimeout(() => statusEl.fadeOut(), 3000);
+            }
+        }
+
+        // Helper function to populate dropdowns with user's current data
+        function populateUserDropdowns() {
+            // Populate subjects dropdown with user's assigned subjects
+            const subjectSelect = $('#schemeSubject');
+            subjectSelect.empty();
+            subjectSelect.append('<option value="">Choose Subject...</option>');
+            
+            if (currentUser.subject) {
+                // Add user's primary subject
+                subjectSelect.append(`<option value="${currentUser.subject}">${currentUser.subject}</option>`);
+            }
+            
+            // Add other common subjects
+            const allSubjects = ['Mathematics', 'English', 'Malayalam', 'Hindi', 'EVS', 'Science', 'Social Science', 'Computer Science', 'Physical Education', 'Art Education', 'Music'];
+            allSubjects.forEach(subject => {
+                if (subject !== currentUser.subject) {
+                    subjectSelect.append(`<option value="${subject}">${subject}</option>`);
+                }
+            });
+            
+            // Populate classes dropdown with user's assigned classes
+            const classSelect = $('#schemeClass');
+            classSelect.empty();
+            classSelect.append('<option value="">Choose Class...</option>');
+            
+            if (currentUser.class) {
+                // Add user's primary class
+                classSelect.append(`<option value="${currentUser.class}">${currentUser.class}</option>`);
+            }
+            
+            // Add other classes
+            const allClasses = ['STD 1A', 'STD 1B', 'STD 2A', 'STD 2B', 'STD 3A', 'STD 3B', 'STD 4A', 'STD 4B', 'STD 5A', 'STD 5B', 'STD 6A', 'STD 6B', 'STD 7A', 'STD 7B', 'STD 8A', 'STD 8B', 'STD 9A', 'STD 9B', 'STD 10A', 'STD 10B'];
+            allClasses.forEach(className => {
+                if (className !== currentUser.class) {
+                    classSelect.append(`<option value="${className}">${className}</option>`);
+                }
+            });
+            
+            // Set default values for current user
+            if (currentUser.subject) {
+                $('#schemeSubject').val(currentUser.subject);
+                $('#lessonSubject').val(currentUser.subject);
+            }
+            if (currentUser.class) {
+                $('#schemeClass').val(currentUser.class);
+                $('#lessonClass').val(currentUser.class);
+            }
+        }
+
+        // Override the modal show functions to populate dropdowns
+        function showAddSchemeModal() {
+            $('#addSchemeModal').modal('show');
+            setTimeout(populateUserDropdowns, 100); // Small delay to ensure modal is rendered
+        }
+
+        function showAddLessonPlanModal() {
+            // Check if user has approved schemes
+            const approvedSchemes = appData.schemes.filter(s => 
+                s.teacher === currentUser.name && s.status === 'Approved'
+            );
+            
+            if (approvedSchemes.length === 0) {
+                alert('You need to have at least one approved scheme before creating lesson plans. Please submit a scheme of work first.');
+                return;
+            }
+            
+            $('#addLessonPlanModal').modal('show');
+            setTimeout(populateUserDropdowns, 100);
+        }
+
+        // Event handlers
+        $(document).ready(function() {
+            // Login form handler
+            $('#loginForm').on('submit', handleLogin);
+        });
+    </script>
 </body>
 </html>
