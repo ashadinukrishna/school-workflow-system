@@ -4,7 +4,7 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>School Workflow System</title>
+    <title>Ayathan School Workflow System</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <style>
@@ -49,31 +49,15 @@
             width: 100%;
             padding: 20px;
             min-height: 100vh;
-            transition: all 0.3s;
         }
-        .card {
-            margin-bottom: 20px;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            margin-top: 100px;
         }
         .card-header {
-            background-color: #007bff;
+            background-color: #007bff !important;
             color: white;
-            font-weight: bold;
-            border-bottom: none;
-            border-radius: 0.5rem 0.5rem 0 0;
-        }
-        .nav-pills .nav-link.active,
-        .nav-pills .show > .nav-link {
-            background-color: #007bff;
-        }
-        .modal-header {
-            background-color: #007bff;
-            color: white;
-        }
-        .form-control:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
         .btn-primary {
             background-color: #007bff;
@@ -83,235 +67,567 @@
             background-color: #0056b3;
             border-color: #0056b3;
         }
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        .section-content {
+            display: none;
         }
-        .spinner-border {
-            width: 3rem; height: 3rem;
+        .section-content.active {
+            display: block;
         }
-        .alert-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            width: 300px;
+        .card {
+            margin-bottom: 20px;
+        }
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-rejected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .timetable-table {
+            font-size: 0.9em;
+        }
+        .timetable-table th,
+        .timetable-table td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+        }
+        .period-cell {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .teacher-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .subject-name {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .date-picker-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .date-picker-container input {
+            max-width: 200px;
+            margin: 0 auto;
         }
         .alert {
-            margin-bottom: 10px;
+            margin-top: 15px;
         }
-        .mobile-responsive {
-            font-size: 14px;
+        .scheme-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        @media (max-width: 768px) {
-            #sidebar {
-                margin-left: -250px;
-            }
-            #sidebar.active {
-                margin-left: 0;
-            }
-            #content {
-                width: 100%;
-            }
-            .table-responsive {
-                font-size: 12px;
-            }
-            .mobile-responsive {
-                font-size: 12px;
-            }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .user-info {
+            color: #fff;
+            margin-left: auto;
+        }
+        .logout-btn {
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="spinner-border text-primary" role="status"></div>
-        <div class="mt-3">Loading...</div>
-    </div>
-
-    <!-- Alert Container -->
-    <div id="alertContainer" class="alert-container"></div>
-
     <!-- Login Screen -->
-    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
-        <div class="card" style="width: 400px;">
-            <div class="card-header text-center">
-                <h4><i class="fas fa-school"></i> School Workflow System</h4>
-            </div>
-            <div class="card-body">
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">Login</button>
-                </form>
-                <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
-                <div class="mt-3 text-center">
-                    <small class="text-muted">
-                        Demo Users: admin/admin123, simna/ct123, athulya/teach123
-                    </small>
+    <div id="loginSection" class="container">
+        <div class="login-container">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4><i class="fas fa-school"></i> Ayathan School Login</h4>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+                    <div id="loginError" class="alert alert-danger" style="display: none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main Application -->
-    <div id="mainApp" class="wrapper" style="display: none;">
-        <!-- Sidebar -->
-        <nav id="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fas fa-school"></i> School System</h3>
-                <p id="userInfo" class="mb-0"></p>
-            </div>
-            <ul class="list-unstyled components">
-                <li><a href="#" id="dashboardLink"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="#" id="schemesLink"><i class="fas fa-file-alt"></i> Schemes</a></li>
-                <li><a href="#" id="lessonPlansLink"><i class="fas fa-clipboard-list"></i> Lesson Plans</a></li>
-                <li><a href="#" id="dailyReportsLink"><i class="fas fa-calendar-day"></i> Daily Reports</a></li>
-                <li><a href="#" id="timetableLink"><i class="fas fa-calendar"></i> Timetable</a></li>
-                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </nav>
-
-        <!-- Page Content -->
-        <div id="content">
-            <!-- Header -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <button type="button" id="sidebarCollapse" class="btn btn-info">
-                    <i class="fas fa-align-left"></i> Toggle Menu
-                </button>
-                <div class="ml-auto">
-                    <span id="connectionStatus" class="badge badge-secondary">Checking connection...</span>
+    <div id="appSection" style="display: none;">
+        <div class="wrapper">
+            <!-- Sidebar -->
+            <nav id="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-school"></i> Ayathan School</h3>
+                    <div id="userInfo" class="mt-2">
+                        <small id="currentUserName"></small><br>
+                        <small id="currentUserRole" class="text-muted"></small>
+                    </div>
                 </div>
+                <ul class="list-unstyled components">
+                    <li><a href="#" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#" onclick="showSection('schemes')"><i class="fas fa-book"></i> Schemes</a></li>
+                    <li><a href="#" onclick="showSection('lessonPlans')"><i class="fas fa-clipboard-list"></i> Lesson Plans</a></li>
+                    <li><a href="#" onclick="showSection('dailyReports')"><i class="fas fa-file-alt"></i> Daily Reports</a></li>
+                    <li><a href="#" onclick="showSection('timetable')"><i class="fas fa-calendar"></i> Timetable</a></li>
+                    <li id="approvalMenuItem" style="display: none;"><a href="#" onclick="showSection('approval')"><i class="fas fa-check-circle"></i> Approvals</a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
             </nav>
 
-            <!-- Dynamic Content Area -->
-            <div id="dynamicContent" class="mt-4">
-                <!-- Content will be loaded here -->
+            <!-- Page Content -->
+            <div id="content">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section-content active">
+                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5>Total Schemes</h5>
+                                    <h3 id="totalSchemes">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5>Approved</h5>
+                                    <h3 id="approvedSchemes">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5>Pending</h5>
+                                    <h3 id="pendingSchemes">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5>Rejected</h5>
+                                    <h3 id="rejectedSchemes">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Recent Activity</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recentActivity">
+                                        <p class="text-muted">Loading recent activity...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schemes Section -->
+                <div id="schemes" class="section-content">
+                    <h2><i class="fas fa-book"></i> Schemes</h2>
+                    
+                    <!-- Add New Scheme Form -->
+                    <div class="card scheme-form">
+                        <div class="card-header">
+                            <h5>Submit New Scheme</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="schemeForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="schemeClass">Class:</label>
+                                            <select class="form-control" id="schemeClass" required>
+                                                <option value="">Select Class</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="schemeSubject">Subject:</label>
+                                            <select class="form-control" id="schemeSubject" required>
+                                                <option value="">Select Subject</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="schemeTerm">Term:</label>
+                                            <select class="form-control" id="schemeTerm" required>
+                                                <option value="">Select Term</option>
+                                                <option value="Term1">Term 1</option>
+                                                <option value="Term2">Term 2</option>
+                                                <option value="Term3">Term 3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="schemeUnit">Unit:</label>
+                                            <input type="text" class="form-control" id="schemeUnit" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="schemeMonth">Month:</label>
+                                            <select class="form-control" id="schemeMonth" required>
+                                                <option value="">Select Month</option>
+                                                <option value="January">January</option>
+                                                <option value="February">February</option>
+                                                <option value="March">March</option>
+                                                <option value="April">April</option>
+                                                <option value="May">May</option>
+                                                <option value="June">June</option>
+                                                <option value="July">July</option>
+                                                <option value="August">August</option>
+                                                <option value="September">September</option>
+                                                <option value="October">October</option>
+                                                <option value="November">November</option>
+                                                <option value="December">December</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label for="schemeChapter">Chapter:</label>
+                                            <input type="text" class="form-control" id="schemeChapter" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="schemePeriods">Number of Periods:</label>
+                                            <input type="number" class="form-control" id="schemePeriods" min="1" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Submit Scheme
+                                </button>
+                            </form>
+                            <div id="schemeMessage" class="alert" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Schemes List -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>My Schemes</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>ID</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Chapter</th>
+                                            <th>Periods</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="schemesTableBody">
+                                        <tr>
+                                            <td colspan="8" class="text-center">Loading schemes...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lesson Plans Section -->
+                <div id="lessonPlans" class="section-content">
+                    <h2><i class="fas fa-clipboard-list"></i> Lesson Plans</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>My Lesson Plans</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>LP ID</th>
+                                            <th>Scheme ID</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Chapter</th>
+                                            <th>Period</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lessonPlansTableBody">
+                                        <tr>
+                                            <td colspan="8" class="text-center">Loading lesson plans...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Reports Section -->
+                <div id="dailyReports" class="section-content">
+                    <h2><i class="fas fa-file-alt"></i> Daily Reports</h2>
+                    
+                    <!-- Submit Daily Report Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Submit Daily Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="dailyReportForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportDate">Date:</label>
+                                            <input type="date" class="form-control" id="reportDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportClass">Class:</label>
+                                            <select class="form-control" id="reportClass" required>
+                                                <option value="">Select Class</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportPeriod">Period:</label>
+                                            <select class="form-control" id="reportPeriod" required>
+                                                <option value="">Select Period</option>
+                                                <option value="1">Period 1</option>
+                                                <option value="2">Period 2</option>
+                                                <option value="3">Period 3</option>
+                                                <option value="4">Period 4</option>
+                                                <option value="5">Period 5</option>
+                                                <option value="6">Period 6</option>
+                                                <option value="7">Period 7</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportLessonPlan">Lesson Plan:</label>
+                                            <select class="form-control" id="reportLessonPlan" required>
+                                                <option value="">Select Lesson Plan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportObjectives">Objectives Delivered:</label>
+                                    <textarea class="form-control" id="reportObjectives" rows="3" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportActivities">Activities Done:</label>
+                                    <textarea class="form-control" id="reportActivities" rows="3" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportCompleted">Was Lesson Completed?</label>
+                                    <select class="form-control" id="reportCompleted" required>
+                                        <option value="">Select Status</option>
+                                        <option value="Yes">Yes - Fully Completed</option>
+                                        <option value="Partial">Partially Completed</option>
+                                        <option value="No">No - Not Completed</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportNotes">Additional Notes:</label>
+                                    <textarea class="form-control" id="reportNotes" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Submit Report
+                                </button>
+                            </form>
+                            <div id="reportMessage" class="alert" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Reports List -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>My Daily Reports</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Class</th>
+                                            <th>Period</th>
+                                            <th>Chapter</th>
+                                            <th>Completed</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dailyReportsTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">Loading daily reports...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timetable Section -->
+                <div id="timetable" class="section-content">
+                    <h2><i class="fas fa-calendar"></i> Timetable</h2>
+                    
+                    <div class="date-picker-container">
+                        <label for="timetableDate"><strong>Select Date:</strong></label>
+                        <input type="date" class="form-control" id="timetableDate" onchange="loadTimetable()">
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 id="timetableTitle">Weekly Timetable</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered timetable-table">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Monday</th>
+                                            <th>Tuesday</th>
+                                            <th>Wednesday</th>
+                                            <th>Thursday</th>
+                                            <th>Friday</th>
+                                            <th>Saturday</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="timetableBody">
+                                        <tr>
+                                            <td colspan="7" class="text-center">Loading timetable...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Section (Headmaster only) -->
+                <div id="approval" class="section-content">
+                    <h2><i class="fas fa-check-circle"></i> Scheme Approvals</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Pending Approvals</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>ID</th>
+                                            <th>Teacher</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Chapter</th>
+                                            <th>Periods</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="approvalTableBody">
+                                        <tr>
+                                            <td colspan="8" class="text-center">Loading pending approvals...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Modals -->
+    <!-- Scheme Details Modal -->
     <div class="modal fade" id="schemeModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Submit New Scheme</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title">Scheme Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="schemeModalBody">
+                    <!-- Content loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal -->
+    <div class="modal fade" id="approvalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve/Reject Scheme</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <form id="schemeForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemeTeacher">Teacher</label>
-                                    <input type="text" class="form-control" id="schemeTeacher" readonly>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemeClass">Class</label>
-                                    <select class="form-control" id="schemeClass" required>
-                                        <option value="">Select Class</option>
-                                        <option value="STD 1A">STD 1A</option>
-                                        <option value="STD 1B">STD 1B</option>
-                                        <option value="STD 2A">STD 2A</option>
-                                        <option value="STD 2B">STD 2B</option>
-                                        <option value="STD 3A">STD 3A</option>
-                                        <option value="STD 3B">STD 3B</option>
-                                        <option value="STD 4A">STD 4A</option>
-                                        <option value="STD 4B">STD 4B</option>
-                                        <option value="STD 5A">STD 5A</option>
-                                        <option value="STD 5B">STD 5B</option>
-                                        <option value="STD 6A">STD 6A</option>
-                                        <option value="STD 6B">STD 6B</option>
-                                        <option value="STD 7A">STD 7A</option>
-                                        <option value="STD 7B">STD 7B</option>
-                                        <option value="STD 8A">STD 8A</option>
-                                        <option value="STD 8B">STD 8B</option>
-                                        <option value="STD 9A">STD 9A</option>
-                                        <option value="STD 9B">STD 9B</option>
-                                        <option value="STD 10A">STD 10A</option>
-                                        <option value="STD 10B">STD 10B</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemeSubject">Subject</label>
-                                    <select class="form-control" id="schemeSubject" required>
-                                        <option value="">Select Subject</option>
-                                        <option value="English">English</option>
-                                        <option value="Malayalam">Malayalam</option>
-                                        <option value="Hindi">Hindi</option>
-                                        <option value="Mathematics">Mathematics</option>
-                                        <option value="Science">Science</option>
-                                        <option value="Social Studies">Social Studies</option>
-                                        <option value="EVS">EVS</option>
-                                        <option value="IT">IT</option>
-                                        <option value="Art">Art</option>
-                                        <option value="PE">PE</option>
-                                        <option value="Music">Music</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemeTerm">Term</label>
-                                    <select class="form-control" id="schemeTerm" required>
-                                        <option value="">Select Term</option>
-                                        <option value="1">Term 1</option>
-                                        <option value="2">Term 2</option>
-                                        <option value="3">Term 3</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemeUnit">Unit Number</label>
-                                    <input type="number" class="form-control" id="schemeUnit" min="1" max="20" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schemePeriods">Number of Periods</label>
-                                    <input type="number" class="form-control" id="schemePeriods" min="1" max="50" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="schemeChapter">Chapter/Title</label>
-                            <input type="text" class="form-control" id="schemeChapter" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="schemeDescription">Description/Content</label>
-                            <textarea class="form-control" id="schemeDescription" rows="4" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="schemeDate">Date</label>
-                            <input type="date" class="form-control" id="schemeDate" required>
-                        </div>
-                    </form>
+                    <div id="approvalSchemeDetails"></div>
+                    <div class="form-group mt-3">
+                        <label for="rejectionReason">Reason (for rejection):</label>
+                        <textarea class="form-control" id="rejectionReason" rows="3" placeholder="Enter reason if rejecting..."></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="approveScheme()">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="rejectScheme()">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="submitScheme()">Submit Scheme</button>
                 </div>
             </div>
         </div>
@@ -319,528 +635,602 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Configuration
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxsPF1PgHRpuuBQuu1jNdEK_mYUIukmxw_fWThwSxwjJiCyt-A9MByB0Fz7ffVsSgJ2lA/exec';
+        // Global variables
         let currentUser = null;
-        let isGoogleSheetsMode = false;
+        let currentSchemeId = null;
+        
+        // API Configuration - REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx7leQt0KYs0QrmDldbQb7LSchrPRz8XpaaZIER4w1SY0YmY4ddP6HqbVB-uEYvlBHLqw/exec';
 
-        // Real Ayathan School Users Data
-        const users = [
-            { id: 1, username: 'admin', password: 'admin123', role: 'Headmaster', name: 'Principal', classes: 'All' },
-            { id: 2, username: 'simna', password: 'ct123', role: 'Class Teacher', name: 'Simna', classes: 'STD 1A' },
-            { id: 3, username: 'priyanka', password: 'ct123', role: 'Class Teacher', name: 'Priyanka', classes: 'STD 2A' },
-            { id: 4, username: 'athulya', password: 'teach123', role: 'Teacher', name: 'Athulya', classes: 'STD 1A,STD 3A' },
-            { id: 5, username: 'rakhee', password: 'teach123', role: 'Teacher', name: 'Rakhee', classes: 'STD 1A,STD 2A,STD 3A' },
-            { id: 6, username: 'shilpa', password: 'teach123', role: 'Teacher', name: 'Shilpa', classes: 'STD 4A,STD 5A' }
-        ];
+        // Initialize the application
+        $(document).ready(function() {
+            setupEventListeners();
+            setTodayDate();
+            // Set default login for testing
+            $('#email').val('admin@ayathanschool.com');
+            $('#password').val('admin123');
+        });
 
-        // Mock data for offline mode
-        let schemes = [];
-        let lessonPlans = [];
-        let dailyReports = [];
-
-        // Utility Functions
-        function showLoading(show = true) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#timetableDate').val(today);
+            $('#reportDate').val(today);
         }
 
-        function showAlert(message, type = 'info') {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            `;
-            alertContainer.appendChild(alert);
-            
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.parentNode.removeChild(alert);
-                }
-            }, 5000);
+        function setupEventListeners() {
+            $('#loginForm').on('submit', handleLogin);
+            $('#schemeForm').on('submit', handleSchemeSubmission);
+            $('#dailyReportForm').on('submit', handleDailyReportSubmission);
         }
 
-        function checkGoogleSheetsConnection() {
-            showLoading();
+        // Authentication functions
+        async function handleLogin(e) {
+            e.preventDefault();
             
-            fetch(`${API_URL}?action=test`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        isGoogleSheetsMode = true;
-                        document.getElementById('connectionStatus').textContent = 'Google Sheets Connected';
-                        document.getElementById('connectionStatus').className = 'badge badge-success';
-                        showAlert('Connected to Google Sheets successfully!', 'success');
-                    } else {
-                        throw new Error(data.error || 'Connection failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Connection error:', error);
-                    isGoogleSheetsMode = false;
-                    document.getElementById('connectionStatus').textContent = 'Offline Mode';
-                    document.getElementById('connectionStatus').className = 'badge badge-warning';
-                    showAlert('Running in offline mode. Data stored locally.', 'warning');
-                })
-                .finally(() => {
-                    showLoading(false);
-                });
-        }
-
-        // Authentication
-        function login(username, password) {
-            const user = users.find(u => u.username === username && u.password === password);
+            const email = $('#email').val();
+            const password = $('#password').val();
             
-            if (user) {
-                currentUser = user;
-                showMainApp();
-                return true;
-            } else {
-                // Try common passwords for debugging
-                const commonPasswords = ['admin123', 'hm123', 'teach123', 'ct123', 'password', '123456'];
-                if (commonPasswords.includes(password)) {
-                    showLoginError('Username not found. Try: admin, simna, athulya, rakhee, or shilpa');
+            try {
+                const response = await fetch(`${API_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentUser = result.user;
+                    showApp();
+                    loadDashboard();
                 } else {
-                    showLoginError('Invalid credentials. Try: admin123, hm123, teach123, or ct123');
+                    showError('loginError', result.message || 'Invalid credentials');
                 }
-                return false;
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('loginError', 'Login failed. Please try again.');
             }
         }
 
-        function showLoginError(message) {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-
-        function showMainApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            document.getElementById('userInfo').textContent = `${currentUser.name} (${currentUser.role})`;
+        function showApp() {
+            $('#loginSection').hide();
+            $('#appSection').show();
             
-            checkGoogleSheetsConnection();
-            loadDashboard();
+            // Update user info
+            $('#currentUserName').text(currentUser.name);
+            $('#currentUserRole').text(currentUser.role);
+            
+            // Show/hide menu items based on role
+            if (currentUser.role === 'Headmaster') {
+                $('#approvalMenuItem').show();
+            }
+            
+            // Load user-specific data
+            loadUserClasses();
+            loadUserSubjects();
         }
 
         function logout() {
             currentUser = null;
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginForm').reset();
-            document.getElementById('loginError').style.display = 'none';
+            $('#appSection').hide();
+            $('#loginSection').show();
+            $('#loginForm')[0].reset();
+            showSection('dashboard');
         }
 
-        // Dashboard
-        function loadDashboard() {
-            const content = document.getElementById('dynamicContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-12">
-                        <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
-                        <p class="text-muted">Welcome ${currentUser.name}! Your role: ${currentUser.role}</p>
-                    </div>
-                </div>
+        // Navigation functions
+        function showSection(sectionName) {
+            $('.section-content').removeClass('active');
+            $(`#${sectionName}`).addClass('active');
+            
+            // Load section-specific data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'schemes':
+                    loadSchemes();
+                    break;
+                case 'lessonPlans':
+                    loadLessonPlans();
+                    break;
+                case 'dailyReports':
+                    loadDailyReports();
+                    break;
+                case 'timetable':
+                    loadTimetable();
+                    break;
+                case 'approval':
+                    loadPendingApprovals();
+                    break;
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}?action=getDashboard&userEmail=${encodeURIComponent(currentUser.email)}`);
+                const result = await response.json();
                 
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h3 id="totalSchemes">0</h3>
-                                <p>Total Schemes</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h3 id="approvedSchemes">0</h3>
-                                <p>Approved</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body text-center">
-                                <h3 id="pendingSchemes">0</h3>
-                                <p>Pending</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <h3 id="rejectedSchemes">0</h3>
-                                <p>Rejected</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-chart-bar"></i> Quick Stats</h5>
-                            </div>
-                            <div class="card-body">
-                                <p><strong>Connection Status:</strong> <span id="dashboardConnection">${isGoogleSheetsMode ? 'Google Sheets Connected' : 'Offline Mode'}</span></p>
-                                <p><strong>Your Classes:</strong> ${currentUser.classes}</p>
-                                <p><strong>System Status:</strong> <span class="text-success">Operational</span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            loadDashboardStats();
-        }
-
-        function loadDashboardStats() {
-            if (isGoogleSheetsMode) {
-                fetch(`${API_URL}?action=getSchemes&teacher=${currentUser.role === 'Headmaster' ? '' : currentUser.name}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            updateDashboardCounts(data.data);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading dashboard stats:', error);
-                        updateDashboardCounts(schemes);
-                    });
-            } else {
-                updateDashboardCounts(schemes);
-            }
-        }
-
-        function updateDashboardCounts(schemeData) {
-            const filteredSchemes = currentUser.role === 'Headmaster' ? schemeData : 
-                schemeData.filter(s => s.teacher === currentUser.name);
-            
-            document.getElementById('totalSchemes').textContent = filteredSchemes.length;
-            document.getElementById('approvedSchemes').textContent = filteredSchemes.filter(s => s.status === 'Approved').length;
-            document.getElementById('pendingSchemes').textContent = filteredSchemes.filter(s => s.status === 'Pending').length;
-            document.getElementById('rejectedSchemes').textContent = filteredSchemes.filter(s => s.status === 'Rejected').length;
-        }
-
-        // Schemes Management
-        function loadSchemes() {
-            const content = document.getElementById('dynamicContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h2><i class="fas fa-file-alt"></i> Schemes Management</h2>
-                            ${currentUser.role !== 'Headmaster' ? '<button class="btn btn-primary" data-toggle="modal" data-target="#schemeModal" onclick="openSchemeModal()"><i class="fas fa-plus"></i> Submit New Scheme</button>' : ''}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Schemes List</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Teacher</th>
-                                        <th>Class</th>
-                                        <th>Subject</th>
-                                        <th>Term</th>
-                                        <th>Unit</th>
-                                        <th>Chapter</th>
-                                        <th>Periods</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        ${currentUser.role === 'Headmaster' ? '<th>Actions</th>' : ''}
-                                    </tr>
-                                </thead>
-                                <tbody id="schemesTableBody">
-                                    <tr><td colspan="11" class="text-center">Loading schemes...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            loadSchemesData();
-        }
-
-        function loadSchemesData() {
-            if (isGoogleSheetsMode) {
-                const params = currentUser.role === 'Headmaster' ? '' : `&teacher=${currentUser.name}`;
-                fetch(`${API_URL}?action=getSchemes${params}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            displaySchemes(data.data);
-                        } else {
-                            throw new Error(data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading schemes:', error);
-                        displaySchemes(schemes.filter(s => currentUser.role === 'Headmaster' || s.teacher === currentUser.name));
-                    });
-            } else {
-                displaySchemes(schemes.filter(s => currentUser.role === 'Headmaster' || s.teacher === currentUser.name));
-            }
-        }
-
-        function displaySchemes(schemesData) {
-            const tbody = document.getElementById('schemesTableBody');
-            if (schemesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center">No schemes found</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = schemesData.map(scheme => `
-                <tr>
-                    <td>${scheme.schemeId || 'N/A'}</td>
-                    <td>${scheme.teacher}</td>
-                    <td>${scheme.class}</td>
-                    <td>${scheme.subject}</td>
-                    <td>${scheme.term}</td>
-                    <td>${scheme.unit}</td>
-                    <td>${scheme.chapter}</td>
-                    <td>${scheme.periods}</td>
-                    <td><span class="badge badge-${getStatusColor(scheme.status)}">${scheme.status}</span></td>
-                    <td>${scheme.date}</td>
-                    ${currentUser.role === 'Headmaster' ? `
-                        <td>
-                            ${scheme.status === 'Pending' ? `
-                                <button class="btn btn-sm btn-success" onclick="updateSchemeStatus('${scheme.schemeId}', 'Approved')">Approve</button>
-                                <button class="btn btn-sm btn-danger" onclick="updateSchemeStatus('${scheme.schemeId}', 'Rejected')">Reject</button>
-                            ` : ''}
-                        </td>
-                    ` : ''}
-                </tr>
-            `).join('');
-        }
-
-        function getStatusColor(status) {
-            switch (status) {
-                case 'Approved': return 'success';
-                case 'Rejected': return 'danger';
-                case 'Pending': return 'warning';
-                default: return 'secondary';
-            }
-        }
-
-        function openSchemeModal() {
-            document.getElementById('schemeTeacher').value = currentUser.name;
-            document.getElementById('schemeDate').value = new Date().toISOString().split('T')[0];
-        }
-
-        function submitScheme() {
-            const formData = {
-                teacher: document.getElementById('schemeTeacher').value,
-                class: document.getElementById('schemeClass').value,
-                subject: document.getElementById('schemeSubject').value,
-                term: document.getElementById('schemeTerm').value,
-                unit: document.getElementById('schemeUnit').value,
-                periods: document.getElementById('schemePeriods').value,
-                chapter: document.getElementById('schemeChapter').value,
-                description: document.getElementById('schemeDescription').value,
-                date: document.getElementById('schemeDate').value,
-                status: 'Pending'
-            };
-
-            // Validate form
-            if (!formData.class || !formData.subject || !formData.term || !formData.unit || 
-                !formData.periods || !formData.chapter || !formData.description) {
-                showAlert('Please fill in all required fields', 'danger');
-                return;
-            }
-
-            showLoading();
-
-            if (isGoogleSheetsMode) {
-                fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert('Scheme submitted successfully!', 'success');
-                        $('#schemeModal').modal('hide');
-                        loadSchemesData();
-                        loadDashboardStats();
-                    } else {
-                        throw new Error(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error submitting scheme:', error);
-                    showAlert('Error submitting scheme: ' + error.message, 'danger');
-                })
-                .finally(() => {
-                    showLoading(false);
-                });
-            } else {
-                // Store locally
-                formData.schemeId = 'SCH' + Date.now().toString().slice(-6);
-                schemes.push(formData);
-                showAlert('Scheme submitted successfully! (Demo mode - stored locally)', 'info');
-                $('#schemeModal').modal('hide');
-                loadSchemesData();
-                loadDashboardStats();
-                showLoading(false);
-            }
-        }
-
-        function updateSchemeStatus(schemeId, status) {
-            const reason = status === 'Rejected' ? prompt('Please provide a reason for rejection:') : '';
-            
-            if (status === 'Rejected' && !reason) {
-                return;
-            }
-
-            showLoading();
-
-            if (isGoogleSheetsMode) {
-                fetch(`${API_URL}?action=updateSchemeStatus&id=${schemeId}&status=${status}&reason=${encodeURIComponent(reason)}`, {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert(`Scheme ${status.toLowerCase()} successfully!`, 'success');
-                        loadSchemesData();
-                        loadDashboardStats();
-                    } else {
-                        throw new Error(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating scheme status:', error);
-                    showAlert('Error updating scheme status: ' + error.message, 'danger');
-                })
-                .finally(() => {
-                    showLoading(false);
-                });
-            } else {
-                // Update locally
-                const scheme = schemes.find(s => s.schemeId === schemeId);
-                if (scheme) {
-                    scheme.status = status;
-                    if (reason) scheme.rejectionReason = reason;
-                    showAlert(`Scheme ${status.toLowerCase()} successfully! (Demo mode)`, 'info');
-                    loadSchemesData();
-                    loadDashboardStats();
+                if (result.success) {
+                    updateDashboardStats(result.data);
+                } else {
+                    console.error('Failed to load dashboard:', result.message);
                 }
-                showLoading(false);
+            } catch (error) {
+                console.error('Dashboard error:', error);
             }
         }
 
-        // Lesson Plans (similar structure)
-        function loadLessonPlans() {
-            const content = document.getElementById('dynamicContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-12">
-                        <h2><i class="fas fa-clipboard-list"></i> Lesson Plans</h2>
-                        <p class="text-muted">Manage your lesson plans here</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <p>Lesson Plans management will be available soon.</p>
-                    </div>
-                </div>
-            `;
+        function updateDashboardStats(data) {
+            $('#totalSchemes').text(data.totalSchemes || 0);
+            $('#approvedSchemes').text(data.approvedSchemes || 0);
+            $('#pendingSchemes').text(data.pendingSchemes || 0);
+            $('#rejectedSchemes').text(data.rejectedSchemes || 0);
+            
+            // Update recent activity
+            if (data.recentActivity && data.recentActivity.length > 0) {
+                let activityHtml = '';
+                data.recentActivity.forEach(activity => {
+                    activityHtml += `<p><strong>${activity.date}</strong>: ${activity.description}</p>`;
+                });
+                $('#recentActivity').html(activityHtml);
+            } else {
+                $('#recentActivity').html('<p class="text-muted">No recent activity</p>');
+            }
         }
 
-        // Daily Reports (similar structure)
-        function loadDailyReports() {
-            const content = document.getElementById('dynamicContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-12">
-                        <h2><i class="fas fa-calendar-day"></i> Daily Reports</h2>
-                        <p class="text-muted">Submit and view daily reports</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <p>Daily Reports management will be available soon.</p>
-                    </div>
-                </div>
-            `;
+        // Scheme functions
+        async function handleSchemeSubmission(e) {
+            e.preventDefault();
+            
+            const schemeData = {
+                teacherName: currentUser.name,
+                teacherEmail: currentUser.email,
+                class: $('#schemeClass').val(),
+                subject: $('#schemeSubject').val(),
+                term: $('#schemeTerm').val(),
+                unit: $('#schemeUnit').val(),
+                month: $('#schemeMonth').val(),
+                chapter: $('#schemeChapter').val(),
+                periods: $('#schemePeriods').val()
+            };
+            
+            try {
+                // Convert to GET request to avoid CORS issues
+                const params = new URLSearchParams({
+                    action: 'addScheme',
+                    ...schemeData
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('schemeMessage', 'Scheme submitted successfully!', 'success');
+                    $('#schemeForm')[0].reset();
+                    loadSchemes();
+                } else {
+                    showMessage('schemeMessage', result.message || 'Failed to submit scheme', 'danger');
+                }
+            } catch (error) {
+                console.error('Scheme submission error:', error);
+                showMessage('schemeMessage', 'Failed to submit scheme. Please try again.', 'danger');
+            }
         }
 
-        // Timetable
-        function loadTimetable() {
-            const content = document.getElementById('dynamicContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-12">
-                        <h2><i class="fas fa-calendar"></i> Timetable</h2>
-                        <p class="text-muted">View class timetables</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <p>Timetable view will be available soon.</p>
-                    </div>
-                </div>
-            `;
+        async function loadSchemes() {
+            try {
+                const response = await fetch(`${API_URL}?action=getSchemes&userEmail=${encodeURIComponent(currentUser.email)}&userRole=${encodeURIComponent(currentUser.role)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displaySchemes(result.data);
+                } else {
+                    console.error('Failed to load schemes:', result.message);
+                }
+            } catch (error) {
+                console.error('Schemes loading error:', error);
+            }
         }
 
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                login(username, password);
+        function displaySchemes(schemes) {
+            const tbody = $('#schemesTableBody');
+            tbody.empty();
+            
+            if (schemes.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No schemes found</td></tr>');
+                return;
+            }
+            
+            schemes.forEach(scheme => {
+                const statusClass = scheme.status === 'Approved' ? 'status-approved' : 
+                                   scheme.status === 'Rejected' ? 'status-rejected' : 'status-pending';
+                
+                const row = `
+                    <tr>
+                        <td>${scheme.date}</td>
+                        <td>${scheme.schemeId}</td>
+                        <td>${scheme.class}</td>
+                        <td>${scheme.subject}</td>
+                        <td>${scheme.chapter}</td>
+                        <td>${scheme.periods}</td>
+                        <td class="${statusClass}">${scheme.status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewSchemeDetails('${scheme.schemeId}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
             });
+        }
 
-            // Sidebar toggle
-            document.getElementById('sidebarCollapse').addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('active');
-            });
+        // Lesson Plans functions
+        async function loadLessonPlans() {
+            try {
+                const response = await fetch(`${API_URL}?action=getLessonPlans&userEmail=${encodeURIComponent(currentUser.email)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayLessonPlans(result.data);
+                } else {
+                    console.error('Failed to load lesson plans:', result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plans loading error:', error);
+            }
+        }
 
-            // Navigation links
-            document.getElementById('dashboardLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loadDashboard();
+        function displayLessonPlans(lessonPlans) {
+            const tbody = $('#lessonPlansTableBody');
+            tbody.empty();
+            
+            if (lessonPlans.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No lesson plans found</td></tr>');
+                return;
+            }
+            
+            lessonPlans.forEach(lp => {
+                const row = `
+                    <tr>
+                        <td>${lp.lessonPlanId}</td>
+                        <td>${lp.schemeId}</td>
+                        <td>${lp.class}</td>
+                        <td>${lp.subject}</td>
+                        <td>${lp.chapter}</td>
+                        <td>${lp.period}</td>
+                        <td>${lp.status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.lessonPlanId}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Daily Reports functions
+        async function handleDailyReportSubmission(e) {
+            e.preventDefault();
+            
+            const reportData = {
+                teacherName: currentUser.name,
+                teacherEmail: currentUser.email,
+                date: $('#reportDate').val(),
+                class: $('#reportClass').val(),
+                period: $('#reportPeriod').val(),
+                lessonPlanId: $('#reportLessonPlan').val(),
+                objectives: $('#reportObjectives').val(),
+                activities: $('#reportActivities').val(),
+                completed: $('#reportCompleted').val(),
+                notes: $('#reportNotes').val()
+            };
+            
+            try {
+                // Convert to GET request to avoid CORS issues
+                const params = new URLSearchParams({
+                    action: 'addDailyReport',
+                    ...reportData
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('reportMessage', 'Daily report submitted successfully!', 'success');
+                    $('#dailyReportForm')[0].reset();
+                    loadDailyReports();
+                } else {
+                    showMessage('reportMessage', result.message || 'Failed to submit report', 'danger');
+                }
+            } catch (error) {
+                console.error('Daily report submission error:', error);
+                showMessage('reportMessage', 'Failed to submit report. Please try again.', 'danger');
+            }
+        }
+
+        async function loadDailyReports() {
+            try {
+                const response = await fetch(`${API_URL}?action=getDailyReports&userEmail=${encodeURIComponent(currentUser.email)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayDailyReports(result.data);
+                } else {
+                    console.error('Failed to load daily reports:', result.message);
+                }
+            } catch (error) {
+                console.error('Daily reports loading error:', error);
+            }
+        }
+
+        function displayDailyReports(reports) {
+            const tbody = $('#dailyReportsTableBody');
+            tbody.empty();
+            
+            if (reports.length === 0) {
+                tbody.append('<tr><td colspan="6" class="text-center">No daily reports found</td></tr>');
+                return;
+            }
+            
+            reports.forEach(report => {
+                const row = `
+                    <tr>
+                        <td>${report.date}</td>
+                        <td>${report.class}</td>
+                        <td>${report.period}</td>
+                        <td>${report.chapter}</td>
+                        <td>${report.completed}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewReportDetails('${report.reportId}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Timetable functions
+        async function loadTimetable() {
+            const selectedDate = $('#timetableDate').val();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getTimetable&userEmail=${encodeURIComponent(currentUser.email)}&date=${selectedDate}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayTimetable(result.data, selectedDate);
+                } else {
+                    console.error('Failed to load timetable:', result.message);
+                }
+            } catch (error) {
+                console.error('Timetable loading error:', error);
+            }
+        }
+
+        function displayTimetable(timetableData, selectedDate) {
+            const tbody = $('#timetableBody');
+            tbody.empty();
+            
+            if (!timetableData || timetableData.length === 0) {
+                tbody.append('<tr><td colspan="7" class="text-center">No timetable data found</td></tr>');
+                return;
+            }
+            
+            // Group timetable data by period
+            const periodData = {};
+            timetableData.forEach(entry => {
+                if (!periodData[entry.period]) {
+                    periodData[entry.period] = {};
+                }
+                periodData[entry.period][entry.day] = entry;
             });
             
-            document.getElementById('schemesLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loadSchemes();
-            });
+            // Create rows for each period
+            for (let period = 1; period <= 7; period++) {
+                const row = $('<tr></tr>');
+                row.append(`<td class="period-cell"><strong>Period ${period}</strong></td>`);
+                
+                ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].forEach(day => {
+                    const entry = periodData[period] && periodData[period][day];
+                    if (entry) {
+                        row.append(`
+                            <td>
+                                <div class="subject-name">${entry.subject}</div>
+                                <div class="teacher-name">${entry.teacherName}</div>
+                            </td>
+                        `);
+                    } else {
+                        row.append('<td class="text-muted">-</td>');
+                    }
+                });
+                
+                tbody.append(row);
+            }
             
-            document.getElementById('lessonPlansLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loadLessonPlans();
+            // Update title with selected date
+            const dateObj = new Date(selectedDate);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
             });
+            $('#timetableTitle').text(`Timetable for ${formattedDate}`);
+        }
+
+        // Approval functions (Headmaster only)
+        async function loadPendingApprovals() {
+            try {
+                const response = await fetch(`${API_URL}?action=getPendingApprovals`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPendingApprovals(result.data);
+                } else {
+                    console.error('Failed to load pending approvals:', result.message);
+                }
+            } catch (error) {
+                console.error('Pending approvals loading error:', error);
+            }
+        }
+
+        function displayPendingApprovals(schemes) {
+            const tbody = $('#approvalTableBody');
+            tbody.empty();
             
-            document.getElementById('dailyReportsLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loadDailyReports();
-            });
+            if (schemes.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No pending approvals</td></tr>');
+                return;
+            }
             
-            document.getElementById('timetableLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loadTimetable();
+            schemes.forEach(scheme => {
+                const row = `
+                    <tr>
+                        <td>${scheme.date}</td>
+                        <td>${scheme.schemeId}</td>
+                        <td>${scheme.teacher}</td>
+                        <td>${scheme.class}</td>
+                        <td>${scheme.subject}</td>
+                        <td>${scheme.chapter}</td>
+                        <td>${scheme.periods}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="openApprovalModal('${scheme.schemeId}')">
+                                <i class="fas fa-check"></i> Review
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
             });
-        });
+        }
+
+        function openApprovalModal(schemeId) {
+            currentSchemeId = schemeId;
+            // Load scheme details and show modal
+            $('#approvalModal').modal('show');
+        }
+
+        async function approveScheme() {
+            if (!currentSchemeId) return;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateSchemeStatus',
+                    schemeId: currentSchemeId,
+                    status: 'Approved',
+                    reason: ''
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#approvalModal').modal('hide');
+                    loadPendingApprovals();
+                    alert('Scheme approved successfully!');
+                } else {
+                    alert('Failed to approve scheme: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Approval error:', error);
+                alert('Failed to approve scheme. Please try again.');
+            }
+        }
+
+        async function rejectScheme() {
+            if (!currentSchemeId) return;
+            
+            const reason = $('#rejectionReason').val();
+            if (!reason.trim()) {
+                alert('Please provide a reason for rejection.');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateSchemeStatus',
+                    schemeId: currentSchemeId,
+                    status: 'Rejected',
+                    reason: reason
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#approvalModal').modal('hide');
+                    loadPendingApprovals();
+                    alert('Scheme rejected successfully!');
+                } else {
+                    alert('Failed to reject scheme: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Rejection error:', error);
+                alert('Failed to reject scheme. Please try again.');
+            }
+        }
+
+        // Helper functions
+        async function loadUserClasses() {
+            const classes = currentUser.classes ? currentUser.classes.split(',') : [];
+            const classSelect = $('#schemeClass, #reportClass');
+            classSelect.empty().append('<option value="">Select Class</option>');
+            
+            classes.forEach(className => {
+                if (className && className.trim() !== 'All') {
+                    classSelect.append(`<option value="${className.trim()}">${className.trim()}</option>`);
+                }
+            });
+        }
+
+        async function loadUserSubjects() {
+            const subjects = currentUser.subjects ? currentUser.subjects.split(',') : [];
+            const subjectSelect = $('#schemeSubject');
+            subjectSelect.empty().append('<option value="">Select Subject</option>');
+            
+            subjects.forEach(subject => {
+                if (subject && subject.trim() !== 'All') {
+                    subjectSelect.append(`<option value="${subject.trim()}">${subject.trim()}</option>`);
+                }
+            });
+        }
+
+        function showMessage(elementId, message, type) {
+            const element = $('#' + elementId);
+            element.removeClass('alert-success alert-danger alert-warning alert-info')
+                   .addClass(`alert-${type}`)
+                   .text(message)
+                   .show();
+            
+            setTimeout(() => {
+                element.hide();
+            }, 5000);
+        }
+
+        function showError(elementId, message) {
+            showMessage(elementId, message, 'danger');
+        }
+
+        // View details functions (to be implemented)
+        function viewSchemeDetails(schemeId) {
+            console.log('View scheme details:', schemeId);
+            // Implementation for viewing scheme details
+        }
+
+        function viewLessonPlanDetails(lessonPlanId) {
+            console.log('View lesson plan details:', lessonPlanId);
+            // Implementation for viewing lesson plan details
+        }
+
+        function viewReportDetails(reportId) {
+            console.log('View report details:', reportId);
+            // Implementation for viewing report details
+        }
     </script>
 </body>
 </html>
