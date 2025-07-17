@@ -80,6 +80,13 @@
             color: #ffc107;
             font-weight: bold;
         }
+        .status-warning {
+            color: #fd7e14;
+            font-weight: bold;
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
         .status-approved {
             color: #28a745;
             font-weight: bold;
@@ -341,6 +348,30 @@
                     <div class="card mt-4">
                         <div class="card-header">
                             <h5>My Schemes</h5>
+                            <!-- Filter Controls -->
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="schemeFilterClass" onchange="filterSchemes()">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="schemeFilterSubject" onchange="filterSchemes()">
+                                        <option value="">All Subjects</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="schemeFilterStatus" onchange="filterSchemes()">
+                                        <option value="">All Statuses</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-sm btn-secondary" onclick="clearSchemeFilters()">Clear Filters</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -371,9 +402,68 @@
                 <!-- Lesson Plans Section -->
                 <div id="lessonPlans" class="section-content">
                     <h2><i class="fas fa-clipboard-list"></i> Lesson Plans</h2>
-                    <div class="card">
+                    
+                    <!-- For Teachers: Show Approved Schemes for Lesson Plan Preparation -->
+                    <div id="approvedSchemesForLessonPlans" class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-tasks"></i> Approved Schemes - Prepare Lesson Plans</h5>
+                            <p class="mb-0 text-muted">Click "Prepare Lesson Plans" to create individual lesson plans for each period</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Scheme ID</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Chapter</th>
+                                            <th>Periods</th>
+                                            <th>Approved Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="approvedSchemesTableBody">
+                                        <tr>
+                                            <td colspan="7" class="text-center">Loading approved schemes...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lesson Plans List -->
+                    <div class="card mt-4">
                         <div class="card-header">
                             <h5>My Lesson Plans</h5>
+                            <!-- Filter Controls -->
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="lessonPlanClassFilter" onchange="filterLessonPlans()">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="lessonPlanSubjectFilter" onchange="filterLessonPlans()">
+                                        <option value="">All Subjects</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control form-control-sm" id="lessonPlanStatusFilter" onchange="filterLessonPlans()">
+                                        <option value="">All Statuses</option>
+                                        <option value="Pending Preparation">Pending Preparation</option>
+                                        <option value="Pending">Pending Review</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Needs Rework">Needs Rework</option>
+                                        <option value="Rejected">Rejected</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-sm btn-secondary" onclick="clearLessonPlanFilters()">Clear Filters</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -405,6 +495,18 @@
                 <div id="dailyReports" class="section-content">
                     <h2><i class="fas fa-file-alt"></i> Daily Reports</h2>
                     
+                    <!-- Today's Timetable Info -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6><i class="fas fa-calendar-day"></i> Today's Schedule</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="todayTimetableInfo">
+                                <p class="text-muted">Loading today's schedule...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Submit Daily Report Form -->
                     <div class="card">
                         <div class="card-header">
@@ -421,9 +523,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="reportClass">Class:</label>
-                                            <select class="form-control" id="reportClass" required>
-                                                <option value="">Select Class</option>
+                                            <label for="reportPeriod">Period (from your timetable):</label>
+                                            <select class="form-control" id="reportPeriod" required onchange="updateClassAndSubjectFromTimetable()">
+                                                <option value="">Select Period</option>
                                             </select>
                                         </div>
                                     </div>
@@ -431,35 +533,43 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="reportPeriod">Period:</label>
-                                            <select class="form-control" id="reportPeriod" required>
-                                                <option value="">Select Period</option>
-                                                <option value="1">Period 1</option>
-                                                <option value="2">Period 2</option>
-                                                <option value="3">Period 3</option>
-                                                <option value="4">Period 4</option>
-                                                <option value="5">Period 5</option>
-                                                <option value="6">Period 6</option>
-                                                <option value="7">Period 7</option>
+                                            <label for="reportClass">Class:</label>
+                                            <input type="text" class="form-control" id="reportClass" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportSubject">Subject:</label>
+                                            <input type="text" class="form-control" id="reportSubject" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="reportLessonPlan">Lesson Plan:</label>
+                                            <select class="form-control" id="reportLessonPlan" required onchange="autoFillLessonPlanDetails()">
+                                                <option value="">First select period</option>
+                                                <option value="no-plan">No Plan (Direct Teaching)</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="reportLessonPlan">Lesson Plan:</label>
-                                            <select class="form-control" id="reportLessonPlan" required>
-                                                <option value="">Select Lesson Plan</option>
-                                            </select>
+                                            <label for="reportChapter">Chapter/Topic:</label>
+                                            <input type="text" class="form-control" id="reportChapter" readonly>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="reportObjectives">Objectives Delivered:</label>
                                     <textarea class="form-control" id="reportObjectives" rows="3" required></textarea>
+                                    <small class="form-text text-muted">Auto-filled from lesson plan (editable)</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="reportActivities">Activities Done:</label>
                                     <textarea class="form-control" id="reportActivities" rows="3" required></textarea>
+                                    <small class="form-text text-muted">Auto-filled from lesson plan (editable)</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="reportCompleted">Was Lesson Completed?</label>
@@ -513,34 +623,56 @@
 
                 <!-- Timetable Section -->
                 <div id="timetable" class="section-content">
-                    <h2><i class="fas fa-calendar"></i> Timetable</h2>
+                    <h2><i class="fas fa-calendar"></i> <span id="timetablePageTitle">My Timetable</span></h2>
                     
                     <div class="date-picker-container">
                         <label for="timetableDate"><strong>Select Date:</strong></label>
                         <input type="date" class="form-control" id="timetableDate" onchange="loadTimetable()">
                     </div>
 
+                    <!-- Principal/Admin View - Filters -->
+                    <div id="principalTimetableFilters" class="card mb-3" style="display: none;">
+                        <div class="card-header">
+                            <h6><i class="fas fa-filter"></i> Timetable Filters</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-control form-control-sm" id="timetableTeacherFilter" onchange="loadTimetable()">
+                                        <option value="">All Teachers</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-control form-control-sm" id="timetableClassFilter" onchange="loadTimetable()">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-sm btn-secondary" onclick="clearTimetableFilters()">Clear Filters</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
-                            <h5 id="timetableTitle">Weekly Timetable</h5>
+                            <h5 id="timetableTitle">Today's Schedule</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-bordered timetable-table">
-                                    <thead class="thead-dark">
+                                    <thead class="thead-dark" id="timetableHeader">
                                         <tr>
                                             <th>Period</th>
-                                            <th>Monday</th>
-                                            <th>Tuesday</th>
-                                            <th>Wednesday</th>
-                                            <th>Thursday</th>
-                                            <th>Friday</th>
-                                            <th>Saturday</th>
+                                            <th>Time</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="timetableBody">
                                         <tr>
-                                            <td colspan="7" class="text-center">Loading timetable...</td>
+                                            <td colspan="5" class="text-center">Loading timetable...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -551,32 +683,86 @@
 
                 <!-- Approval Section (Headmaster only) -->
                 <div id="approval" class="section-content">
-                    <h2><i class="fas fa-check-circle"></i> Scheme Approvals</h2>
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Pending Approvals</h5>
+                    <h2><i class="fas fa-check-circle"></i> Approvals</h2>
+                    
+                    <!-- Approval Tabs -->
+                    <ul class="nav nav-tabs" id="approvalTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="scheme-approvals-tab" data-toggle="tab" href="#scheme-approvals" role="tab">
+                                <i class="fas fa-book"></i> Scheme Approvals
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="lesson-plan-approvals-tab" data-toggle="tab" href="#lesson-plan-approvals" role="tab">
+                                <i class="fas fa-clipboard-list"></i> Lesson Plan Approvals
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="approvalTabContent">
+                        <!-- Scheme Approvals Tab -->
+                        <div class="tab-pane fade show active" id="scheme-approvals" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Pending Scheme Approvals</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>ID</th>
+                                                    <th>Teacher</th>
+                                                    <th>Month</th>
+                                                    <th>Class</th>
+                                                    <th>Subject</th>
+                                                    <th>Chapter</th>
+                                                    <th>Periods</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="approvalTableBody">
+                                                <tr>
+                                                    <td colspan="9" class="text-center">Loading pending approvals...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>ID</th>
-                                            <th>Teacher</th>
-                                            <th>Class</th>
-                                            <th>Subject</th>
-                                            <th>Chapter</th>
-                                            <th>Periods</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="approvalTableBody">
-                                        <tr>
-                                            <td colspan="8" class="text-center">Loading pending approvals...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        
+                        <!-- Lesson Plan Approvals Tab -->
+                        <div class="tab-pane fade" id="lesson-plan-approvals" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Pending Lesson Plan Approvals</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>LP ID</th>
+                                                    <th>Scheme ID</th>
+                                                    <th>Teacher</th>
+                                                    <th>Month</th>
+                                                    <th>Class</th>
+                                                    <th>Subject</th>
+                                                    <th>Chapter</th>
+                                                    <th>Period</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="lessonPlanApprovalTableBody">
+                                                <tr>
+                                                    <td colspan="9" class="text-center">Loading pending lesson plan approvals...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -633,6 +819,169 @@
         </div>
     </div>
 
+    <!-- Bulk Lesson Plan Creation Modal -->
+    <div class="modal fade" id="bulkLessonPlanModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Prepare Lesson Plans for Scheme</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="bulkLessonPlanDetails"></div>
+                    <form id="bulkLessonPlanForm">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Sub-Chapter/Topic</th>
+                                        <th>Learning Objectives</th>
+                                        <th>Planned Activities</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulkLessonPlanTableBody">
+                                    <!-- Rows will be generated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="submitBulkLessonPlans()">
+                        <i class="fas fa-check"></i> Create All Lesson Plans
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson Plan Completion Modal -->
+    <div class="modal fade" id="lessonPlanCompletionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Complete Lesson Plan</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="completionLessonPlanDetails"></div>
+                    <form id="lessonPlanCompletionForm">
+                        <div class="form-group">
+                            <label for="completionPeriod">Period Number:</label>
+                            <select class="form-control" id="completionPeriod" required>
+                                <option value="">Select Period</option>
+                                <option value="1">Period 1</option>
+                                <option value="2">Period 2</option>
+                                <option value="3">Period 3</option>
+                                <option value="4">Period 4</option>
+                                <option value="5">Period 5</option>
+                                <option value="6">Period 6</option>
+                                <option value="7">Period 7</option>
+                                <option value="8">Period 8</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="completionObjectives">Learning Objectives:</label>
+                            <textarea class="form-control" id="completionObjectives" rows="4" required 
+                                placeholder="List the specific learning objectives for this lesson..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="completionActivities">Planned Activities:</label>
+                            <textarea class="form-control" id="completionActivities" rows="4" required 
+                                placeholder="Describe the activities you will conduct in this lesson..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="submitLessonPlanCompletion()">
+                        <i class="fas fa-check"></i> Complete Lesson Plan
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson Plan View Modal -->
+    <div class="modal fade" id="lessonPlanViewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Lesson Plan Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="viewLessonPlanDetails"></div>
+                </div>
+                <div class="modal-footer" id="lessonPlanViewActions">
+                    <!-- Actions will be populated based on role and status -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson Plan Approval Modal -->
+    <div class="modal fade" id="lessonPlanApprovalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Lesson Plan Review & Action</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="approvalLessonPlanDetails"></div>
+                    
+                    <!-- Objectives and Activities Display -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Learning Objectives:</strong></label>
+                                <div id="lessonPlanObjectives" class="border p-3 bg-light" style="min-height: 100px; border-radius: 5px;">
+                                    Loading objectives...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Planned Activities:</strong></label>
+                                <div id="lessonPlanActivities" class="border p-3 bg-light" style="min-height: 100px; border-radius: 5px;">
+                                    Loading activities...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label for="lessonPlanActionReason">Reason/Comments:</label>
+                        <textarea class="form-control" id="lessonPlanActionReason" rows="3" placeholder="Enter reason for rejection or comments for rework..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="approveLessonPlanFromModal()">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="needsReworkLessonPlan()">
+                        <i class="fas fa-edit"></i> Needs Rework
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="rejectLessonPlanFromModal()">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -641,9 +990,13 @@
         // Global variables
         let currentUser = null;
         let currentSchemeId = null;
+        let currentLessonPlanId = null;
+        let currentCompletionLessonPlanId = null;
+        let todayTimetableData = [];
+        let lessonPlansData = [];
         
         // API Configuration - REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx7leQt0KYs0QrmDldbQb7LSchrPRz8XpaaZIER4w1SY0YmY4ddP6HqbVB-uEYvlBHLqw/exec';
+        const API_URL = 'https://script.google.com/a/macros/ayathanschool.com/s/AKfycbx7leQt0KYs0QrmDldbQb7LSchrPRz8XpaaZIER4w1SY0YmY4ddP6HqbVB-uEYvlBHLqw/exec';
 
         // Initialize the application
         $(document).ready(function() {
@@ -663,7 +1016,14 @@
         function setupEventListeners() {
             $('#loginForm').on('submit', handleLogin);
             $('#schemeForm').on('submit', handleSchemeSubmission);
+            $('#lessonPlanForm').on('submit', handleLessonPlanSubmission);
             $('#dailyReportForm').on('submit', handleDailyReportSubmission);
+            
+            // Scheme filter event listeners
+            $('#schemeClassFilter, #schemeSubjectFilter, #schemeStatusFilter').on('change', filterSchemes);
+            
+            // Lesson plan filter event listeners  
+            $('#lessonPlanClassFilter, #lessonPlanSubjectFilter, #lessonPlanStatusFilter').on('change', filterLessonPlans);
         }
 
         // Authentication functions
@@ -698,14 +1058,31 @@
             $('#currentUserName').text(currentUser.name);
             $('#currentUserRole').text(currentUser.role);
             
-            // Show/hide menu items based on role
+            // Show/hide menu items and forms based on role
             if (currentUser.role === 'Headmaster') {
                 $('#approvalMenuItem').show();
+                $('#lessonPlanFormSection').hide(); // Hide lesson plan form for Headmaster
+                // Timetable view for Headmaster (individual teacher view)
+                $('#timetablePageTitle').text('Teacher Timetables');
+                $('#principalTimetableFilters').show();
+                setupTimetableForRole('headmaster');
+            } else if (currentUser.role === 'Class Teacher') {
+                $('#approvalMenuItem').hide(); // Class teachers can't approve
+                $('#lessonPlanFormSection').show(); // Show lesson plan form for Class Teachers
+                // Timetable view for Class Teacher (class-specific view)
+                $('#timetablePageTitle').text('Class Timetable');
+                setupTimetableForRole('teacher');
+            } else {
+                $('#lessonPlanFormSection').show(); // Show lesson plan form for Teachers
+                // Timetable view for Teachers (personal schedule)
+                $('#timetablePageTitle').text('My Timetable');
+                setupTimetableForRole('teacher');
             }
             
             // Load user-specific data
             loadUserClasses();
             loadUserSubjects();
+            loadLessonPlanUserData();
         }
 
         function logout() {
@@ -734,12 +1111,19 @@
                     break;
                 case 'dailyReports':
                     loadDailyReports();
+                    loadTodayTimetableForReports();
                     break;
                 case 'timetable':
+                    // Ensure date is set before loading timetable
+                    if (!$('#timetableDate').val()) {
+                        const today = new Date().toISOString().split('T')[0];
+                        $('#timetableDate').val(today);
+                    }
                     loadTimetable();
                     break;
                 case 'approval':
                     loadPendingApprovals();
+                    loadPendingLessonPlanApprovals();
                     break;
             }
         }
@@ -817,6 +1201,45 @@
             }
         }
 
+        // Lesson Plan submission function
+        async function handleLessonPlanSubmission(e) {
+            e.preventDefault();
+            
+            const lessonPlanData = {
+                teacherName: currentUser.name,
+                teacher: currentUser.name,
+                schemeId: $('#lpSchemeId').val(),
+                class: $('#lpClass').val(),
+                subject: $('#lpSubject').val(),
+                chapter: $('#lpChapter').val(),
+                period: $('#lpPeriod').val(),
+                objectives: $('#lpObjectives').val(),
+                activities: $('#lpActivities').val()
+            };
+            
+            try {
+                // Convert to GET request to avoid CORS issues
+                const params = new URLSearchParams({
+                    action: 'addLessonPlan',
+                    ...lessonPlanData
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('lessonPlanMessage', 'Lesson plan submitted successfully!', 'success');
+                    $('#lessonPlanForm')[0].reset();
+                    loadLessonPlans();
+                } else {
+                    showMessage('lessonPlanMessage', result.message || 'Failed to submit lesson plan', 'danger');
+                }
+            } catch (error) {
+                console.error('Lesson plan submission error:', error);
+                showMessage('lessonPlanMessage', 'Failed to submit lesson plan. Please try again.', 'danger');
+            }
+        }
+
         async function loadSchemes() {
             try {
                 const response = await fetch(`${API_URL}?action=getSchemes&userEmail=${encodeURIComponent(currentUser.email)}&userRole=${encodeURIComponent(currentUser.role)}`);
@@ -836,6 +1259,12 @@
             const tbody = $('#schemesTableBody');
             tbody.empty();
             
+            // Store all schemes for filtering
+            window.allSchemes = schemes;
+            
+            // Populate filter dropdowns
+            populateSchemeFilters(schemes);
+            
             if (schemes.length === 0) {
                 tbody.append('<tr><td colspan="8" class="text-center">No schemes found</td></tr>');
                 return;
@@ -847,13 +1276,13 @@
                 
                 const row = `
                     <tr>
-                        <td>${scheme.date}</td>
-                        <td>${scheme.schemeId}</td>
-                        <td>${scheme.class}</td>
-                        <td>${scheme.subject}</td>
-                        <td>${scheme.chapter}</td>
-                        <td>${scheme.periods}</td>
-                        <td class="${statusClass}">${scheme.status}</td>
+                        <td>${scheme.date || ''}</td>
+                        <td>${scheme.schemeId || ''}</td>
+                        <td>${scheme.class || ''}</td>
+                        <td>${scheme.subject || ''}</td>
+                        <td>${scheme.chapter || ''}</td>
+                        <td>${scheme.periods || ''}</td>
+                        <td class="${statusClass}">${scheme.status || 'Pending'}</td>
                         <td>
                             <button class="btn btn-sm btn-info" onclick="viewSchemeDetails('${scheme.schemeId}')">
                                 <i class="fas fa-eye"></i> View
@@ -865,6 +1294,84 @@
             });
         }
 
+        function populateSchemeFilters(schemes) {
+            const classFilter = $('#schemeFilterClass');
+            const subjectFilter = $('#schemeFilterSubject');
+            
+            // Get unique values
+            const classes = [...new Set(schemes.map(s => s.class).filter(Boolean))];
+            const subjects = [...new Set(schemes.map(s => s.subject).filter(Boolean))];
+            
+            // Populate class filter
+            classFilter.find('option:not(:first)').remove();
+            classes.forEach(className => {
+                classFilter.append(`<option value="${className}">${className}</option>`);
+            });
+            
+            // Populate subject filter
+            subjectFilter.find('option:not(:first)').remove();
+            subjects.forEach(subject => {
+                subjectFilter.append(`<option value="${subject}">${subject}</option>`);
+            });
+        }
+
+        function filterSchemes() {
+            const classFilter = $('#schemeFilterClass').val();
+            const subjectFilter = $('#schemeFilterSubject').val();
+            const statusFilter = $('#schemeFilterStatus').val();
+            
+            let filteredSchemes = window.allSchemes || [];
+            
+            if (classFilter) {
+                filteredSchemes = filteredSchemes.filter(s => s.class === classFilter);
+            }
+            if (subjectFilter) {
+                filteredSchemes = filteredSchemes.filter(s => s.subject === subjectFilter);
+            }
+            if (statusFilter) {
+                filteredSchemes = filteredSchemes.filter(s => s.status === statusFilter);
+            }
+            
+            // Re-display filtered schemes
+            const tbody = $('#schemesTableBody');
+            tbody.empty();
+            
+            if (filteredSchemes.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No schemes match the filters</td></tr>');
+                return;
+            }
+            
+            filteredSchemes.forEach(scheme => {
+                const statusClass = scheme.status === 'Approved' ? 'status-approved' : 
+                                   scheme.status === 'Rejected' ? 'status-rejected' : 'status-pending';
+                
+                const row = `
+                    <tr>
+                        <td>${scheme.date || ''}</td>
+                        <td>${scheme.schemeId || ''}</td>
+                        <td>${scheme.class || ''}</td>
+                        <td>${scheme.subject || ''}</td>
+                        <td>${scheme.chapter || ''}</td>
+                        <td>${scheme.periods || ''}</td>
+                        <td class="${statusClass}">${scheme.status || 'Pending'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewSchemeDetails('${scheme.schemeId}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        function clearSchemeFilters() {
+            $('#schemeFilterClass').val('');
+            $('#schemeFilterSubject').val('');
+            $('#schemeFilterStatus').val('');
+            filterSchemes();
+        }
+
         // Lesson Plans functions
         async function loadLessonPlans() {
             try {
@@ -873,6 +1380,7 @@
                 
                 if (result.success) {
                     displayLessonPlans(result.data);
+                    loadApprovedSchemesForLessonPlans(); // Load approved schemes for lesson plan preparation
                 } else {
                     console.error('Failed to load lesson plans:', result.message);
                 }
@@ -881,34 +1389,364 @@
             }
         }
 
-        function displayLessonPlans(lessonPlans) {
-            const tbody = $('#lessonPlansTableBody');
+        async function loadApprovedSchemesForLessonPlans() {
+            try {
+                const response = await fetch(`${API_URL}?action=getApprovedSchemes&userEmail=${encodeURIComponent(currentUser.email)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayApprovedSchemesForLessonPlans(result.data);
+                } else {
+                    console.error('Failed to load approved schemes:', result.message);
+                }
+            } catch (error) {
+                console.error('Approved schemes loading error:', error);
+            }
+        }
+
+        function displayApprovedSchemesForLessonPlans(schemes) {
+            const tbody = $('#approvedSchemesTableBody');
             tbody.empty();
             
-            if (lessonPlans.length === 0) {
-                tbody.append('<tr><td colspan="8" class="text-center">No lesson plans found</td></tr>');
+            if (schemes.length === 0) {
+                tbody.append('<tr><td colspan="7" class="text-center">No approved schemes available for lesson plan preparation</td></tr>');
                 return;
             }
             
-            lessonPlans.forEach(lp => {
+            schemes.forEach(scheme => {
                 const row = `
                     <tr>
-                        <td>${lp.lessonPlanId}</td>
-                        <td>${lp.schemeId}</td>
-                        <td>${lp.class}</td>
-                        <td>${lp.subject}</td>
-                        <td>${lp.chapter}</td>
-                        <td>${lp.period}</td>
-                        <td>${lp.status}</td>
+                        <td>${scheme.schemeId || ''}</td>
+                        <td>${scheme.class || ''}</td>
+                        <td>${scheme.subject || ''}</td>
+                        <td>${scheme.chapter || ''}</td>
+                        <td>${scheme.periods || ''}</td>
+                        <td>${scheme.approvedDate || ''}</td>
                         <td>
-                            <button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.lessonPlanId}')">
-                                <i class="fas fa-eye"></i> View
+                            <button class="btn btn-sm btn-primary" onclick="prepareLessonPlans('${scheme.schemeId}', '${scheme.class}', '${scheme.subject}', '${scheme.chapter}', ${scheme.periods})">
+                                <i class="fas fa-plus"></i> Prepare Lesson Plans
                             </button>
                         </td>
                     </tr>
                 `;
                 tbody.append(row);
             });
+        }
+
+        function prepareLessonPlans(schemeId, className, subject, chapter, periods) {
+            // Store scheme data for later use
+            window.currentSchemeForLessonPlans = {
+                schemeId: schemeId,
+                class: className,
+                subject: subject,
+                chapter: chapter,
+                periods: periods
+            };
+            
+            // Show details in modal
+            $('#bulkLessonPlanDetails').html(`
+                <div class="alert alert-info">
+                    <h6>Creating Lesson Plans for:</h6>
+                    <p><strong>Scheme ID:</strong> ${schemeId}</p>
+                    <p><strong>Class:</strong> ${className} | <strong>Subject:</strong> ${subject}</p>
+                    <p><strong>Main Chapter:</strong> ${chapter}</p>
+                    <p><strong>Number of Periods:</strong> ${periods}</p>
+                </div>
+            `);
+            
+            // Generate table rows for each period
+            const tableBody = $('#bulkLessonPlanTableBody');
+            tableBody.empty();
+            
+            for (let i = 1; i <= periods; i++) {
+                const row = `
+                    <tr>
+                        <td><strong>Period ${i}</strong></td>
+                        <td>
+                            <input type="text" class="form-control" id="subChapter_${i}" 
+                                   placeholder="Sub-chapter or specific topic for period ${i}" required>
+                        </td>
+                        <td>
+                            <textarea class="form-control" id="objectives_${i}" rows="3" 
+                                      placeholder="Learning objectives for period ${i}..." required></textarea>
+                        </td>
+                        <td>
+                            <textarea class="form-control" id="activities_${i}" rows="3" 
+                                      placeholder="Planned activities for period ${i}..." required></textarea>
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            }
+            
+            // Store scheme details for submission
+            window.currentSchemeForLessonPlans = {
+                schemeId: schemeId,
+                class: className,
+                subject: subject,
+                chapter: chapter,
+                periods: periods
+            };
+            
+            // Show the modal
+            $('#bulkLessonPlanModal').modal('show');
+        }
+
+        async function submitBulkLessonPlans() {
+            const schemeData = window.currentSchemeForLessonPlans;
+            if (!schemeData) return;
+            
+            const lessonPlans = [];
+            
+            // Collect data from all periods
+            for (let i = 1; i <= schemeData.periods; i++) {
+                const subChapter = $(`#subChapter_${i}`).val();
+                const objectives = $(`#objectives_${i}`).val();
+                const activities = $(`#activities_${i}`).val();
+                
+                if (!subChapter.trim() || !objectives.trim() || !activities.trim()) {
+                    alert(`Please fill all fields for Period ${i}`);
+                    return;
+                }
+                
+                lessonPlans.push({
+                    schemeId: schemeData.schemeId,
+                    class: schemeData.class,
+                    subject: schemeData.subject,
+                    mainChapter: schemeData.chapter,
+                    subChapter: subChapter,
+                    period: i,
+                    objectives: objectives,
+                    activities: activities,
+                    teacher: currentUser.name
+                });
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'createBulkLessonPlans',
+                    lessonPlans: JSON.stringify(lessonPlans)
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#bulkLessonPlanModal').modal('hide');
+                    alert(`Successfully created ${lessonPlans.length} lesson plans for review!`);
+                    loadLessonPlans(); // Refresh the lesson plans list
+                } else {
+                    alert('Failed to create lesson plans: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Bulk lesson plan creation error:', error);
+                alert('Failed to create lesson plans. Please try again.');
+            }
+        }
+
+        function displayLessonPlans(lessonPlans) {
+            const tbody = $('#lessonPlansTableBody');
+            tbody.empty();
+            
+            // Store lesson plans data globally for reference
+            lessonPlansData = lessonPlans;
+            
+            if (lessonPlans.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No lesson plans found</td></tr>');
+                return;
+            }
+            
+            // Populate filter dropdowns
+            populateLessonPlanFilters(lessonPlans);
+            
+            lessonPlans.forEach(lp => {
+                const statusClass = lp.Status === 'Approved' ? 'status-approved' : 
+                                   lp.Status === 'Rejected' ? 'status-rejected' : 
+                                   lp.Status === 'Need Correction' ? 'status-rejected' :
+                                   lp.Status === 'Needs Rework' ? 'status-warning' :
+                                   lp.Status === 'Pending Preparation' ? 'status-warning' : 'status-pending';
+                
+                let actionButton;
+                
+                // Different actions based on user role and lesson plan status
+                if (currentUser.role === 'Headmaster') {
+                    // Headmaster always views first, then can take action if pending
+                    if (lp.Status === 'Pending') {
+                        actionButton = `
+                            <button class="btn btn-sm btn-info" onclick="viewLessonPlanForApproval('${lp.LPID}')">
+                                <i class="fas fa-eye"></i> View & Approve
+                            </button>
+                        `;
+                    } else {
+                        actionButton = `<button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.LPID}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>`;
+                    }
+                } else {
+                    // Teachers can complete lesson plans or view them
+                    if (lp.Status === 'Pending Preparation') {
+                        actionButton = `<button class="btn btn-sm btn-warning" onclick="openLessonPlanCompletionModal('${lp.LPID}', '${lp.ChapterName}', '${lp.Class}', '${lp.Subject}', '${lp.Period || ''}')">
+                            <i class="fas fa-edit"></i> Complete
+                        </button>`;
+                    } else if (lp.Status === 'Needs Rework') {
+                        actionButton = `<button class="btn btn-sm btn-warning" onclick="openLessonPlanCompletionModal('${lp.LPID}', '${lp.ChapterName}', '${lp.Class}', '${lp.Subject}', '${lp.Period || ''}')">
+                            <i class="fas fa-edit"></i> Rework
+                        </button>`;
+                    } else {
+                        actionButton = `<button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.LPID}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>`;
+                    }
+                }
+                
+                // Display period properly
+                const periodDisplay = lp.Period ? `Period ${lp.Period}` : 'Not Set';
+                
+                const row = `
+                    <tr>
+                        <td>${lp.LPID || ''}</td>
+                        <td>${lp.SchemeID || ''}</td>
+                        <td>${lp.Class || ''}</td>
+                        <td>${lp.Subject || ''}</td>
+                        <td>${lp.ChapterName || ''}</td>
+                        <td>${periodDisplay}</td>
+                        <td class="${statusClass}">${lp.Status || 'Unknown'}</td>
+                        <td>${actionButton}</td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Lesson Plan Filter Functions
+        function populateLessonPlanFilters(lessonPlans) {
+            // Get unique values for dropdowns
+            const classes = [...new Set(lessonPlans.map(lp => lp.Class).filter(c => c))];
+            const subjects = [...new Set(lessonPlans.map(lp => lp.Subject).filter(s => s))];
+            const statuses = [...new Set(lessonPlans.map(lp => lp.Status).filter(s => s))];
+            
+            // Populate class filter
+            const classFilter = $('#lessonPlanClassFilter');
+            classFilter.empty().append('<option value="">All Classes</option>');
+            classes.sort().forEach(cls => {
+                classFilter.append(`<option value="${cls}">${cls}</option>`);
+            });
+            
+            // Populate subject filter
+            const subjectFilter = $('#lessonPlanSubjectFilter');
+            subjectFilter.empty().append('<option value="">All Subjects</option>');
+            subjects.sort().forEach(sub => {
+                subjectFilter.append(`<option value="${sub}">${sub}</option>`);
+            });
+            
+            // Populate status filter
+            const statusFilter = $('#lessonPlanStatusFilter');
+            statusFilter.empty().append('<option value="">All Statuses</option>');
+            statuses.sort().forEach(status => {
+                statusFilter.append(`<option value="${status}">${status}</option>`);
+            });
+        }
+
+        function filterLessonPlans() {
+            if (!lessonPlansData) return;
+            
+            const classFilter = $('#lessonPlanClassFilter').val();
+            const subjectFilter = $('#lessonPlanSubjectFilter').val();
+            const statusFilter = $('#lessonPlanStatusFilter').val();
+            
+            let filteredData = lessonPlansData;
+            
+            if (classFilter) {
+                filteredData = filteredData.filter(lp => lp.Class === classFilter);
+            }
+            
+            if (subjectFilter) {
+                filteredData = filteredData.filter(lp => lp.Subject === subjectFilter);
+            }
+            
+            if (statusFilter) {
+                filteredData = filteredData.filter(lp => lp.Status === statusFilter);
+            }
+            
+            displayFilteredLessonPlans(filteredData);
+        }
+
+        function displayFilteredLessonPlans(lessonPlans) {
+            const tbody = $('#lessonPlansTableBody');
+            tbody.empty();
+            
+            if (lessonPlans.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">No lesson plans match the current filters</td></tr>');
+                return;
+            }
+            
+            lessonPlans.forEach(lp => {
+                const statusClass = lp.Status === 'Approved' ? 'status-approved' : 
+                                   lp.Status === 'Rejected' ? 'status-rejected' : 
+                                   lp.Status === 'Need Correction' ? 'status-rejected' :
+                                   lp.Status === 'Needs Rework' ? 'status-warning' :
+                                   lp.Status === 'Pending Preparation' ? 'status-warning' : 'status-pending';
+                
+                let actionButton;
+                
+                // Different actions based on user role and lesson plan status
+                if (currentUser.role === 'Headmaster') {
+                    // Headmaster always views first, then can take action if pending
+                    if (lp.Status === 'Pending') {
+                        actionButton = `
+                            <button class="btn btn-sm btn-info" onclick="viewLessonPlanForApproval('${lp.LPID}')">
+                                <i class="fas fa-eye"></i> View & Approve
+                            </button>
+                        `;
+                    } else {
+                        actionButton = `<button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.LPID}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>`;
+                    }
+                } else {
+                    // Teachers can complete lesson plans or view them
+                    if (lp.Status === 'Pending Preparation') {
+                        actionButton = `<button class="btn btn-sm btn-warning" onclick="openLessonPlanCompletionModal('${lp.LPID}', '${lp.ChapterName}', '${lp.Class}', '${lp.Subject}', '${lp.Period || ''}')">
+                            <i class="fas fa-edit"></i> Complete
+                        </button>`;
+                    } else if (lp.Status === 'Needs Rework') {
+                        actionButton = `<button class="btn btn-sm btn-warning" onclick="openLessonPlanCompletionModal('${lp.LPID}', '${lp.ChapterName}', '${lp.Class}', '${lp.Subject}', '${lp.Period || ''}')">
+                            <i class="fas fa-edit"></i> Rework
+                        </button>`;
+                    } else {
+                        actionButton = `<button class="btn btn-sm btn-info" onclick="viewLessonPlanDetails('${lp.LPID}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>`;
+                    }
+                }
+                
+                // Display period properly
+                const periodDisplay = lp.Period ? `Period ${lp.Period}` : 'Not Set';
+                
+                const row = `
+                    <tr>
+                        <td>${lp.LPID || ''}</td>
+                        <td>${lp.SchemeID || ''}</td>
+                        <td>${lp.Class || ''}</td>
+                        <td>${lp.Subject || ''}</td>
+                        <td>${lp.ChapterName || ''}</td>
+                        <td>${periodDisplay}</td>
+                        <td class="${statusClass}">${lp.Status || 'Unknown'}</td>
+                        <td>${actionButton}</td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        function clearLessonPlanFilters() {
+            $('#lessonPlanClassFilter').val('');
+            $('#lessonPlanSubjectFilter').val('');
+            $('#lessonPlanStatusFilter').val('');
+            
+            if (lessonPlansData) {
+                displayFilteredLessonPlans(lessonPlansData);
+            }
         }
 
         // Daily Reports functions
@@ -995,72 +1833,215 @@
         }
 
         // Timetable functions
+        function setupTimetableForRole(role) {
+            const header = $('#timetableHeader tr');
+            
+            if (role === 'headmaster') {
+                // Headmaster sees all classes with teacher info and filters
+                header.html(`
+                    <th>Period</th>
+                    <th>Time</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                    <th>Status</th>
+                `);
+                $('#principalTimetableFilters').show();
+                loadTimetableFilters();
+            } else if (role === 'principal') {
+                // Principal sees all classes with teacher info
+                header.html(`
+                    <th>Period</th>
+                    <th>Time</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                    <th>Status</th>
+                `);
+                $('#principalTimetableFilters').show();
+                loadTimetableFilters();
+            } else {
+                // Teacher sees personal schedule
+                header.html(`
+                    <th>Period</th>
+                    <th>Time</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                `);
+                $('#principalTimetableFilters').hide();
+            }
+        }
+
+        async function loadTimetableFilters() {
+            try {
+                const response = await fetch(`${API_URL}?action=getTimetableFilters`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    populateTimetableFilters(result.data);
+                }
+            } catch (error) {
+                console.error('Failed to load timetable filters:', error);
+            }
+        }
+
+        function populateTimetableFilters(data) {
+            const teacherFilter = $('#timetableTeacherFilter');
+            const classFilter = $('#timetableClassFilter');
+            
+            // Populate teacher filter
+            teacherFilter.empty().append('<option value="">All Teachers</option>');
+            if (data.teachers) {
+                data.teachers.forEach(teacher => {
+                    teacherFilter.append(`<option value="${teacher}">${teacher}</option>`);
+                });
+            }
+            
+            // Populate class filter
+            classFilter.empty().append('<option value="">All Classes</option>');
+            if (data.classes) {
+                data.classes.forEach(cls => {
+                    classFilter.append(`<option value="${cls}">${cls}</option>`);
+                });
+            }
+        }
+
+        function clearTimetableFilters() {
+            $('#timetableTeacherFilter').val('');
+            $('#timetableClassFilter').val('');
+            loadTimetable();
+        }
+
         async function loadTimetable() {
             const selectedDate = $('#timetableDate').val();
+            const teacherFilter = $('#timetableTeacherFilter').val() || '';
+            const classFilter = $('#timetableClassFilter').val() || '';
+            
+            console.log('Loading timetable for:', { 
+                selectedDate, 
+                teacherFilter, 
+                classFilter, 
+                userRole: currentUser.role,
+                userEmail: currentUser.email 
+            });
             
             try {
-                const response = await fetch(`${API_URL}?action=getTimetable&userEmail=${encodeURIComponent(currentUser.email)}&date=${selectedDate}`);
+                let url = `${API_URL}?action=getTimetable&userEmail=${encodeURIComponent(currentUser.email)}&date=${selectedDate}&userRole=${encodeURIComponent(currentUser.role)}`;
+                
+                if (teacherFilter) url += `&teacherFilter=${encodeURIComponent(teacherFilter)}`;
+                if (classFilter) url += `&classFilter=${encodeURIComponent(classFilter)}`;
+                
+                console.log('Fetching timetable from:', url);
+                
+                const response = await fetch(url);
                 const result = await response.json();
+                
+                console.log('Timetable API response:', result);
                 
                 if (result.success) {
                     displayTimetable(result.data, selectedDate);
                 } else {
                     console.error('Failed to load timetable:', result.message);
+                    $('#timetableBody').html('<tr><td colspan="6" class="text-center text-danger">Failed to load timetable: ' + (result.message || 'Unknown error') + '</td></tr>');
                 }
             } catch (error) {
                 console.error('Timetable loading error:', error);
+                $('#timetableBody').html('<tr><td colspan="6" class="text-center text-danger">Error loading timetable: ' + error.message + '</td></tr>');
             }
         }
 
         function displayTimetable(timetableData, selectedDate) {
+            console.log('displayTimetable called with:', { 
+                dataLength: timetableData ? timetableData.length : 0, 
+                selectedDate, 
+                currentUserRole: currentUser.role,
+                sampleData: timetableData ? timetableData.slice(0, 2) : null
+            });
+            
             const tbody = $('#timetableBody');
             tbody.empty();
             
             if (!timetableData || timetableData.length === 0) {
-                tbody.append('<tr><td colspan="7" class="text-center">No timetable data found</td></tr>');
+                const colSpan = (currentUser.role === 'Headmaster' || currentUser.role === 'Class Teacher') ? '6' : '5';
+                tbody.append(`<tr><td colspan="${colSpan}" class="text-center">No classes scheduled for this date</td></tr>`);
                 return;
             }
             
-            // Group timetable data by period
-            const periodData = {};
-            timetableData.forEach(entry => {
-                if (!periodData[entry.period]) {
-                    periodData[entry.period] = {};
-                }
-                periodData[entry.period][entry.day] = entry;
-            });
+            // Get the day of the week for the selected date
+            const dateObj = new Date(selectedDate);
+            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
             
-            // Create rows for each period
-            for (let period = 1; period <= 7; period++) {
-                const row = $('<tr></tr>');
-                row.append(`<td class="period-cell"><strong>Period ${period}</strong></td>`);
-                
-                ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].forEach(day => {
-                    const entry = periodData[period] && periodData[period][day];
-                    if (entry) {
-                        row.append(`
-                            <td>
-                                <div class="subject-name">${entry.subject}</div>
-                                <div class="teacher-name">${entry.teacherName}</div>
-                            </td>
-                        `);
-                    } else {
-                        row.append('<td class="text-muted">-</td>');
-                    }
-                });
-                
-                tbody.append(row);
+            let filteredData = timetableData;
+            
+            // Filter based on user role
+            if (currentUser.role === 'Teacher') {
+                // Teachers see only their own schedule
+                filteredData = timetableData.filter(entry => 
+                    entry.teacherName === currentUser.name && entry.day === dayName
+                );
+            } else {
+                // Principal/Admin/Headmaster see all schedules, filtered by day
+                filteredData = timetableData.filter(entry => entry.day === dayName);
             }
             
-            // Update title with selected date
-            const dateObj = new Date(selectedDate);
-            const formattedDate = dateObj.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            if (filteredData.length === 0) {
+                const colSpan = (currentUser.role === 'Headmaster' || currentUser.role === 'Class Teacher') ? '6' : '5';
+                const message = currentUser.role === 'Teacher' ? 
+                    'No classes scheduled for you on this date' : 
+                    'No classes scheduled for this date';
+                tbody.append(`<tr><td colspan="${colSpan}" class="text-center">${message}</td></tr>`);
+                return;
+            }
+            
+            // Sort by period number
+            filteredData.sort((a, b) => a.period - b.period);
+            
+            filteredData.forEach(entry => {
+                let row;
+                
+                if (currentUser.role === 'Headmaster' || currentUser.role === 'Class Teacher') {
+                    // Headmaster/Class Teacher view with teacher column
+                    const reportStatus = checkReportStatus(selectedDate, entry.period, entry.teacherName);
+                    row = `
+                        <tr>
+                            <td><strong>Period ${entry.period}</strong></td>
+                            <td>${entry.time || 'Time not set'}</td>
+                            <td>${entry.class}</td>
+                            <td>${entry.subject}</td>
+                            <td>${entry.teacherName}</td>
+                            <td>${reportStatus}</td>
+                        </tr>
+                    `;
+                } else {
+                    // Teacher view (personal schedule)
+                    const reportStatus = checkReportStatus(selectedDate, entry.period);
+                    row = `
+                        <tr>
+                            <td><strong>Period ${entry.period}</strong></td>
+                            <td>${entry.time || 'Time not set'}</td>
+                            <td>${entry.class}</td>
+                            <td>${entry.subject}</td>
+                            <td>${reportStatus}</td>
+                        </tr>
+                    `;
+                }
+                
+                tbody.append(row);
             });
-            $('#timetableTitle').text(`Timetable for ${formattedDate}`);
+            
+            // Update title
+            $('#timetableTitle').text(`${dayName} Schedule - ${selectedDate}`);
+        }
+
+        function checkReportStatus(date, period, teacherName = null) {
+            // This would check if a daily report has been submitted for this date/period
+            // For Principal/Admin view, check for specific teacher
+            // For Teacher view, check for current user
+            const checkFor = teacherName || currentUser.name;
+            
+            // Placeholder implementation - in real scenario, check against daily reports data
+            return '<span class="text-muted">Not reported</span>';
         }
 
         // Approval functions (Headmaster only)
@@ -1084,7 +2065,7 @@
             tbody.empty();
             
             if (schemes.length === 0) {
-                tbody.append('<tr><td colspan="8" class="text-center">No pending approvals</td></tr>');
+                tbody.append('<tr><td colspan="9" class="text-center">No pending approvals</td></tr>');
                 return;
             }
             
@@ -1094,6 +2075,7 @@
                         <td>${scheme.date}</td>
                         <td>${scheme.schemeId}</td>
                         <td>${scheme.teacher}</td>
+                        <td>${scheme.month || 'Not set'}</td>
                         <td>${scheme.class}</td>
                         <td>${scheme.subject}</td>
                         <td>${scheme.chapter}</td>
@@ -1178,7 +2160,7 @@
         // Helper functions
         async function loadUserClasses() {
             const classes = currentUser.classes ? currentUser.classes.split(',') : [];
-            const classSelect = $('#schemeClass, #reportClass');
+            const classSelect = $('#schemeClass');
             classSelect.empty().append('<option value="">Select Class</option>');
             
             classes.forEach(className => {
@@ -1190,7 +2172,7 @@
 
         async function loadUserSubjects() {
             const subjects = currentUser.subjects ? currentUser.subjects.split(',') : [];
-            const subjectSelect = $('#schemeSubject');
+            const subjectSelect = $('#schemeSubject, #lpSubject');
             subjectSelect.empty().append('<option value="">Select Subject</option>');
             
             subjects.forEach(subject => {
@@ -1198,6 +2180,281 @@
                     subjectSelect.append(`<option value="${subject.trim()}">${subject.trim()}</option>`);
                 }
             });
+        }
+
+        async function loadLessonPlanUserData() {
+            // Populate lesson plan class dropdown
+            const classes = currentUser.classes ? currentUser.classes.split(',') : [];
+            const lpClassSelect = $('#lpClass');
+            lpClassSelect.empty().append('<option value="">Select Class</option>');
+            
+            classes.forEach(className => {
+                if (className && className.trim() !== 'All') {
+                    lpClassSelect.append(`<option value="${className.trim()}">${className.trim()}</option>`);
+                }
+            });
+        }
+
+        // Today's timetable for daily reports
+        async function loadTodayTimetableForReports() {
+            const today = new Date().toISOString().split('T')[0];
+            const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getTimetable&userEmail=${encodeURIComponent(currentUser.email)}&date=${today}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Filter for current teacher and today
+                    todayTimetableData = result.data.filter(entry => 
+                        entry.teacherName === currentUser.name && entry.day === dayName
+                    );
+                    
+                    displayTodayTimetableInfo();
+                    populatePeriodDropdown();
+                } else {
+                    console.error('Failed to load today\'s timetable:', result.message);
+                }
+            } catch (error) {
+                console.error('Today\'s timetable loading error:', error);
+            }
+        }
+
+        function displayTodayTimetableInfo() {
+            const container = $('#todayTimetableInfo');
+            
+            if (todayTimetableData.length === 0) {
+                container.html('<p class="text-muted">No classes scheduled for today</p>');
+                return;
+            }
+            
+            let html = '<div class="row">';
+            todayTimetableData.forEach(entry => {
+                html += `
+                    <div class="col-md-4 mb-2">
+                        <div class="card card-sm">
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1">Period ${entry.period}</h6>
+                                <p class="card-text mb-0">
+                                    <strong>${entry.class}</strong> - ${entry.subject}<br>
+                                    <small class="text-muted">${entry.time || 'Time not set'}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.html(html);
+        }
+
+        function populatePeriodDropdown() {
+            const periodSelect = $('#reportPeriod');
+            periodSelect.empty().append('<option value="">Select Period</option>');
+            
+            todayTimetableData.forEach(entry => {
+                periodSelect.append(`<option value="${entry.period}">Period ${entry.period} - ${entry.class} (${entry.subject})</option>`);
+            });
+        }
+
+        function updateClassAndSubjectFromTimetable() {
+            const selectedPeriod = $('#reportPeriod').val();
+            
+            if (!selectedPeriod) {
+                $('#reportClass').val('');
+                $('#reportSubject').val('');
+                $('#reportLessonPlan').empty().append('<option value="">First select period</option>');
+                return;
+            }
+            
+            const timetableEntry = todayTimetableData.find(entry => entry.period.toString() === selectedPeriod);
+            
+            if (timetableEntry) {
+                $('#reportClass').val(timetableEntry.class);
+                $('#reportSubject').val(timetableEntry.subject);
+                
+                // Load lesson plans for this class and subject
+                loadLessonPlansForReport(timetableEntry.class, timetableEntry.subject);
+            }
+        }
+
+        async function loadLessonPlansForReport(className, subject) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'getLessonPlans',
+                    teacher: currentUser.name,
+                    class: className,
+                    subject: subject,
+                    status: 'Approved'
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const reportLessonPlanSelect = $('#reportLessonPlan');
+                    reportLessonPlanSelect.empty()
+                        .append('<option value="">Select Lesson Plan</option>')
+                        .append('<option value="no-plan">No Plan (Direct Teaching)</option>');
+                    
+                    // Filter to only show approved lesson plans for this class and subject
+                    const filteredLessonPlans = result.data.filter(lp => 
+                        lp.Status === 'Approved' && 
+                        lp.Class === className && 
+                        lp.Subject === subject
+                    );
+                    
+                    filteredLessonPlans.forEach(lp => {
+                        const displayText = `${lp.LPID} - ${lp.ChapterName}`;
+                        reportLessonPlanSelect.append(`<option value="${lp.LPID}">${displayText}</option>`);
+                    });
+                    
+                    if (filteredLessonPlans.length === 0) {
+                        reportLessonPlanSelect.append('<option value="" disabled>No approved lesson plans available for this class/subject</option>');
+                    }
+                } else {
+                    console.error('Failed to load lesson plans for report:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading lesson plans for report:', error);
+            }
+        }
+
+        function autoFillLessonPlanDetails() {
+            const selectedLessonPlanId = $('#reportLessonPlan').val();
+            
+            if (!selectedLessonPlanId || selectedLessonPlanId === 'no-plan') {
+                $('#reportObjectives').val('');
+                $('#reportActivities').val('');
+                $('#reportChapter').val('');
+                return;
+            }
+            
+            // Find the lesson plan in our stored data
+            const lessonPlan = lessonPlansData.find(lp => lp.LPID === selectedLessonPlanId);
+            
+            if (lessonPlan) {
+                $('#reportObjectives').val(lessonPlan.Objectives || '');
+                $('#reportActivities').val(lessonPlan.Activities || '');
+                $('#reportChapter').val(lessonPlan.ChapterName || '');
+            }
+        }
+
+        // New lesson plan view and approval functions
+        function viewLessonPlanForApproval(lessonPlanId) {
+            const lessonPlan = lessonPlansData.find(lp => lp.LPID === lessonPlanId);
+            
+            if (!lessonPlan) {
+                alert('Lesson plan not found');
+                return;
+            }
+            
+            // Display lesson plan details in view modal
+            const detailsHtml = `
+                <div class="card">
+                    <div class="card-body">
+                        <h6><strong>Lesson Plan ID:</strong> ${lessonPlan.LPID}</h6>
+                        <p><strong>Scheme ID:</strong> ${lessonPlan.SchemeID || 'N/A'}</p>
+                        <p><strong>Teacher:</strong> ${lessonPlan.Teacher || currentUser.name}</p>
+                        <p><strong>Class:</strong> ${lessonPlan.Class}</p>
+                        <p><strong>Subject:</strong> ${lessonPlan.Subject}</p>
+                        <p><strong>Chapter:</strong> ${lessonPlan.ChapterName}</p>
+                        <p><strong>Period:</strong> ${lessonPlan.Period ? `Period ${lessonPlan.Period}` : 'Not Set'}</p>
+                        
+                        <hr>
+                        
+                        <h6><strong>Learning Objectives:</strong></h6>
+                        <div class="border p-2 mb-3" style="background-color: #f8f9fa;">
+                            ${lessonPlan.Objectives || 'Not specified'}
+                        </div>
+                        
+                        <h6><strong>Planned Activities:</strong></h6>
+                        <div class="border p-2" style="background-color: #f8f9fa;">
+                            ${lessonPlan.Activities || 'Not specified'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#viewLessonPlanDetails').html(detailsHtml);
+            
+            // Add action buttons for Headmaster
+            const actionButtonsHtml = `
+                <button type="button" class="btn btn-success" onclick="showApprovalModal('${lessonPlanId}', 'approve')">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button type="button" class="btn btn-warning" onclick="showApprovalModal('${lessonPlanId}', 'rework')">
+                    <i class="fas fa-edit"></i> Needs Rework
+                </button>
+                <button type="button" class="btn btn-danger" onclick="showApprovalModal('${lessonPlanId}', 'reject')">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            `;
+            
+            $('#lessonPlanViewActions').html(actionButtonsHtml);
+            $('#lessonPlanViewModal').modal('show');
+        }
+
+        function showApprovalModal(lessonPlanId, action) {
+            currentLessonPlanId = lessonPlanId;
+            $('#lessonPlanViewModal').modal('hide');
+            
+            const lessonPlan = lessonPlansData.find(lp => lp.LPID === lessonPlanId);
+            
+            // Show summary in approval modal
+            $('#approvalLessonPlanDetails').html(`
+                <div class="alert alert-info">
+                    <strong>Action:</strong> ${action.charAt(0).toUpperCase() + action.slice(1)} lesson plan ${lessonPlanId}<br>
+                    <strong>Class:</strong> ${lessonPlan.Class} | <strong>Subject:</strong> ${lessonPlan.Subject}
+                </div>
+            `);
+            
+            // Set appropriate placeholder text
+            const reasonField = $('#lessonPlanActionReason');
+            if (action === 'approve') {
+                reasonField.attr('placeholder', 'Optional comments...');
+            } else if (action === 'rework') {
+                reasonField.attr('placeholder', 'Specify what needs to be reworked...');
+            } else {
+                reasonField.attr('placeholder', 'Specify reason for rejection...');
+            }
+            
+            $('#lessonPlanApprovalModal').modal('show');
+        }
+
+        async function needsReworkLessonPlan() {
+            if (!currentLessonPlanId) return;
+            
+            const reason = $('#lessonPlanActionReason').val();
+            if (!reason.trim()) {
+                alert('Please provide details about what needs to be reworked.');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateLessonPlanStatus',
+                    lessonPlanId: currentLessonPlanId,
+                    status: 'Needs Rework',
+                    reason: reason
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#lessonPlanApprovalModal').modal('hide');
+                    loadLessonPlans();
+                    alert('Lesson plan marked for rework successfully!');
+                } else {
+                    alert('Failed to mark lesson plan for rework: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan rework error:', error);
+                alert('Failed to mark lesson plan for rework. Please try again.');
+            }
         }
 
         function showMessage(elementId, message, type) {
@@ -1231,6 +2488,353 @@
             console.log('View report details:', reportId);
             // Implementation for viewing report details
         }
+
+        // Lesson Plan Approval functions
+        async function loadPendingLessonPlanApprovals() {
+            try {
+                const response = await fetch(`${API_URL}?action=getPendingLessonPlanApprovals`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPendingLessonPlanApprovals(result.data);
+                } else {
+                    console.error('Failed to load pending lesson plan approvals:', result.message);
+                }
+            } catch (error) {
+                console.error('Pending lesson plan approvals loading error:', error);
+            }
+        }
+
+        function displayPendingLessonPlanApprovals(lessonPlans) {
+            const tbody = $('#lessonPlanApprovalTableBody');
+            tbody.empty();
+            
+            if (lessonPlans.length === 0) {
+                tbody.append('<tr><td colspan="9" class="text-center">No pending lesson plan approvals</td></tr>');
+                return;
+            }
+            
+            lessonPlans.forEach(lp => {
+                const row = `
+                    <tr>
+                        <td>${lp.lessonPlanId}</td>
+                        <td>${lp.schemeId}</td>
+                        <td>${lp.teacher}</td>
+                        <td>${lp.month || 'Not set'}</td>
+                        <td>${lp.class}</td>
+                        <td>${lp.subject}</td>
+                        <td>${lp.chapter}</td>
+                        <td>${lp.period}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="openLessonPlanApprovalModal('${lp.lessonPlanId}')">
+                                <i class="fas fa-check"></i> Review
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        async function openLessonPlanApprovalModal(lessonPlanId) {
+            currentLessonPlanId = lessonPlanId;
+            
+            try {
+                // Load full lesson plan details including objectives and activities
+                const response = await fetch(`${API_URL}?action=getLessonPlanDetails&lessonPlanId=${encodeURIComponent(lessonPlanId)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const lp = result.data;
+                    
+                    // Display basic details
+                    $('#approvalLessonPlanDetails').html(`
+                        <div class="alert alert-info">
+                            <h6>Lesson Plan Details:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>LP ID:</strong> ${lp.lessonPlanId}</p>
+                                    <p><strong>Scheme ID:</strong> ${lp.schemeId}</p>
+                                    <p><strong>Teacher:</strong> ${lp.teacher}</p>
+                                    <p><strong>Month:</strong> ${lp.month || 'Not set'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Class:</strong> ${lp.class}</p>
+                                    <p><strong>Subject:</strong> ${lp.subject}</p>
+                                    <p><strong>Chapter:</strong> ${lp.chapter}</p>
+                                    <p><strong>Period:</strong> ${lp.period}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Display objectives and activities
+                    $('#lessonPlanObjectives').html(lp.objectives || '<em class="text-muted">No objectives provided</em>');
+                    $('#lessonPlanActivities').html(lp.activities || '<em class="text-muted">No activities provided</em>');
+                    
+                } else {
+                    $('#approvalLessonPlanDetails').html('<div class="alert alert-danger">Failed to load lesson plan details</div>');
+                    $('#lessonPlanObjectives').html('<em class="text-muted">Failed to load</em>');
+                    $('#lessonPlanActivities').html('<em class="text-muted">Failed to load</em>');
+                }
+            } catch (error) {
+                console.error('Error loading lesson plan details:', error);
+                $('#approvalLessonPlanDetails').html('<div class="alert alert-danger">Error loading lesson plan details</div>');
+            }
+            
+            $('#lessonPlanApprovalModal').modal('show');
+        }
+
+        // Direct approval function for Headmaster (legacy - still used in some contexts)
+        async function approveLessonPlan(lessonPlanId) {
+            if (!lessonPlanId) return;
+            
+            if (!confirm('Are you sure you want to approve this lesson plan?')) return;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateLessonPlanStatus',
+                    lessonPlanId: lessonPlanId,
+                    status: 'Approved',
+                    reason: ''
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadLessonPlans();
+                    alert('Lesson plan approved successfully!');
+                } else {
+                    alert('Failed to approve lesson plan: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan approval error:', error);
+                alert('Failed to approve lesson plan. Please try again.');
+            }
+        }
+
+        // Direct rejection function for Headmaster (legacy - still used in some contexts)
+        async function rejectLessonPlan(lessonPlanId) {
+            if (!lessonPlanId) return;
+            
+            const reason = prompt('Please enter the reason for rejection:');
+            if (!reason) return;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateLessonPlanStatus',
+                    lessonPlanId: lessonPlanId,
+                    status: 'Rejected',
+                    reason: reason
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadLessonPlans();
+                    alert('Lesson plan rejected successfully!');
+                } else {
+                    alert('Failed to reject lesson plan: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan rejection error:', error);
+                alert('Failed to reject lesson plan. Please try again.');
+            }
+        }
+
+        // Legacy approval function (keep for modal-based approval)
+        async function approveLessonPlanFromModal() {
+            if (!currentLessonPlanId) return;
+            
+            const reason = $('#lessonPlanActionReason').val();
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateLessonPlanStatus',
+                    lessonPlanId: currentLessonPlanId,
+                    status: 'Approved',
+                    reason: reason || ''
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#lessonPlanApprovalModal').modal('hide');
+                    loadLessonPlans();
+                    alert('Lesson plan approved successfully!');
+                } else {
+                    alert('Failed to approve lesson plan: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan approval error:', error);
+                alert('Failed to approve lesson plan. Please try again.');
+            }
+        }
+
+        // Legacy rejection function (keep for modal-based rejection) 
+        async function rejectLessonPlanFromModal() {
+            if (!currentLessonPlanId) return;
+            
+            const reason = $('#lessonPlanActionReason').val();
+            if (!reason.trim()) {
+                alert('Please provide a reason for rejection.');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateLessonPlanStatus',
+                    lessonPlanId: currentLessonPlanId,
+                    status: 'Rejected',
+                    reason: reason
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#lessonPlanApprovalModal').modal('hide');
+                    loadLessonPlans();
+                    alert('Lesson plan rejected successfully!');
+                } else {
+                    alert('Failed to reject lesson plan: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan rejection error:', error);
+                alert('Failed to reject lesson plan. Please try again.');
+            }
+        }
+
+        // Lesson Plan Completion functions
+        function openLessonPlanCompletionModal(lessonPlanId, chapter, className, subject, period) {
+            currentCompletionLessonPlanId = lessonPlanId;
+            
+            // Show lesson plan details
+            $('#completionLessonPlanDetails').html(`
+                <div class="alert alert-info">
+                    <h6>Lesson Plan Details:</h6>
+                    <p><strong>Lesson Plan ID:</strong> ${lessonPlanId}</p>
+                    <p><strong>Class:</strong> ${className}</p>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <p><strong>Chapter:</strong> ${chapter}</p>
+                    ${period ? `<p><strong>Period:</strong> ${period}</p>` : ''}
+                </div>
+            `);
+            
+            // Reset form
+            $('#lessonPlanCompletionForm')[0].reset();
+            
+            // Pre-fill period if available
+            if (period) {
+                $('#completionPeriod').val(period);
+                // If period is already set, make it readonly and hide the dropdown
+                $('#completionPeriod').prop('readonly', true).closest('.form-group').hide();
+            } else {
+                $('#completionPeriod').prop('readonly', false).closest('.form-group').show();
+            }
+            
+            // Show modal
+            $('#lessonPlanCompletionModal').modal('show');
+        }
+
+        async function submitLessonPlanCompletion() {
+            if (!currentCompletionLessonPlanId) return;
+            
+            const period = $('#completionPeriod').val();
+            const objectives = $('#completionObjectives').val();
+            const activities = $('#completionActivities').val();
+            
+            // Period is optional if already set during auto-generation
+            if (!objectives.trim() || !activities.trim()) {
+                alert('Please fill in Learning Objectives and Planned Activities.');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'completeLessonPlan',
+                    lessonPlanId: currentCompletionLessonPlanId,
+                    objectives: objectives,
+                    activities: activities
+                });
+                
+                // Only include period if it's provided (might already be set)
+                if (period) {
+                    params.append('period', period);
+                }
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    $('#lessonPlanCompletionModal').modal('hide');
+                    loadLessonPlans();
+                    alert('Lesson plan completed successfully! Status changed to Pending for approval.');
+                } else {
+                    alert('Failed to complete lesson plan: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Lesson plan completion error:', error);
+                alert('Failed to complete lesson plan. Please try again.');
+            }
+        }
+
+        // Debug function to get sheet headers
+        async function getSheetHeaders() {
+            try {
+                const response = await fetch(`${API_URL}?action=testUsers`);
+                const result = await response.json();
+                
+                console.log('=== SHEET HEADERS INFORMATION ===');
+                if (result.success && result.data) {
+                    console.log('Spreadsheet Name:', result.data.spreadsheetName);
+                    console.log('Spreadsheet ID:', result.data.spreadsheetId);
+                    console.log('Total Sheets:', result.data.totalSheets);
+                    console.log('\n=== ALL SHEETS ===');
+                    
+                    Object.entries(result.data.sheets).forEach(([sheetName, info]) => {
+                        console.log(`\n--- ${sheetName} ---`);
+                        if (info.error) {
+                            console.log('ERROR:', info.error);
+                        } else if (info.note) {
+                            console.log('NOTE:', info.note);
+                        } else {
+                            console.log('Headers:', info.headers);
+                            console.log('Total Rows:', info.totalRows);
+                            console.log('Total Columns:', info.totalColumns);
+                            if (info.sampleData && info.sampleData.length > 0) {
+                                console.log('Sample Data (first 3 rows):', info.sampleData);
+                            }
+                        }
+                    });
+                    
+                    console.log('\n=== EXPECTED SHEETS ===');
+                    console.log('Expected:', result.data.expectedSheets);
+                    
+                    // Check for missing sheets
+                    const expectedSheetNames = Object.values(result.data.expectedSheets || {});
+                    const actualSheetNames = Object.keys(result.data.sheets);
+                    const missingSheets = expectedSheetNames.filter(name => !actualSheetNames.includes(name));
+                    
+                    if (missingSheets.length > 0) {
+                        console.log('\n=== MISSING SHEETS ===');
+                        console.log('Missing:', missingSheets);
+                    }
+                } else {
+                    console.error('Failed to get sheet headers:', result.message || result.error);
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('Error calling getSheetHeaders:', error);
+            }
+        }
+
+        // Make function available globally for console access
+        window.getSheetHeaders = getSheetHeaders;
     </script>
 </body>
 </html>
